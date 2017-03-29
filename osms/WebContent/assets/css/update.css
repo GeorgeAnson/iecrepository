@@ -1,0 +1,235 @@
+body{
+  font-family: Arial, "Microsoft YaHei";
+}
+
+.btnNisal {
+  border: 0 none;
+  border-radius: 2px 2px 2px 2px;
+  color: #fff;
+  font-family: Arial,sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 0;
+  margin-top: 15px;
+  padding: 7px 10px;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+  text-decoration: none;
+  font-weight: normal;
+  width: 150px;
+  /* auto */
+  text-align: center;
+  /* DELETE WHEN WIDTH AUTO */
+  background-color: #0c68ab;
+  font-weight: 900;
+}
+
+.red{
+  color: #ff425f;
+}
+
+.buttonFormat{
+  width: 70px;
+  font-weight: 900;
+  border: 0 none;
+  background-color: #0c68ab;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  color: #fff;
+  -webkit-transition: all 0.3s ease 0s;
+}
+
+.btnNisal:hover, .buttonFormat:hover{
+    background-color: #ff7b60;
+    color: #fff;
+}
+
+td, th{
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.stuStatus, .isAtSchool, .studentInfoEnterFace, .addNewPassport, .update, .addBill, .updateBill, .checkNotice, .foreignInfo{
+  cursor: pointer !important;
+  background: #4b93f2 !important;
+  color: #FFF !important;
+  font-weight: bold;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+}
+
+.stuStatus:hover, .isAtSchool:hover, .studentInfoEnterFace:hover, .addNewPassport:hover, .update:hover, .addBill:hover, .updateBill:hover, .checkNotice:hover, .foreignInfo:hover{
+  background: #1854a4 !important;
+}
+
+.studentInfoTable td{
+  width: 25%;
+}
+
+.studentInfoTableTitle{
+  background: #2b7bcd;
+  color: #FFF;
+  font-weight: 900;
+}
+
+table a{
+  text-decoration: underline;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+  color: #3783e8;
+}
+
+table a:hover{
+  text-decoration: underline;
+  color: #f96c6c;
+}
+
+.watch202Table, .watchStartSchoolApplyForm, .watchStartSchoolNotic{
+  cursor: pointer;
+  background-color: #ff6666;
+  cursor: pointer !important;
+  color: #fff;
+  font-weight: 900;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+}
+
+.watch202Table:hover, .watchStartSchoolApplyForm:hover, .watchStartSchoolNotic:hover{
+  background: #ff3b3b;
+}
+
+#noticeTitle{
+  margin-top: 10px;
+  text-align: center;
+  font-size: 28px;
+  line-height: 28px;
+}
+
+#noticeInfo{
+  text-align: center;
+  margin-top: 10px;
+  color: #1571ab;
+}
+
+#noticeSection{
+  text-indent: 2em;
+  margin-top: 10px;
+}
+
+.clearFix{
+  float: none;
+  clear: both;
+}
+
+#blank{
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #fff;
+  z-index: 99999;
+}
+
+.col-md-6{
+  width: 50%;
+  float: left;
+  border-bottom: 1px solid #ededed;
+}
+
+.studentInfoBlock{
+  padding: 10px;
+  font-size: 16px;
+  padding-left: 30px;
+}
+
+@media only screen and (max-width: 768px){
+  .col-md-6{
+    width: 100%;
+    float: none;
+  }
+  .studentInfoItemTitle{
+    text-align: left;
+    padding-right: 0px;
+  }
+  .foreighInfoSpan{
+    display: block;
+    width: 100%;
+  }
+}
+
+.col-md-outer{
+  background: white;
+  border: 1px solid #dddddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.055);
+  border-top: 0px;
+  float: left;
+  width: 100%;
+  margin-left: -1px;
+}
+
+.studentInfoItemTitle{
+  color: #ff4242;
+  font-weight: 900;
+  padding-right: 20px;
+}
+
+#foreignInfo{
+  padding: 20px;
+}
+
+#foreignInfo div{
+  margin-top: 5px;
+}
+
+#foreignInfo span{
+  font-size: 18px;
+}
+
+.infoBlock{
+
+}
+
+.paging{
+  width: 100%;
+  text-align: right;
+}
+
+.paging a{
+  border: 0 none;
+  border-radius: 2px 2px 2px 2px;
+  color: #fff;
+  font-family: Arial,sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 0;
+  margin-top: 15px;
+  padding: 7px 10px;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+  text-decoration: none;
+  font-weight: normal;
+  width: 150px;
+  /* auto */
+  text-align: center;
+  /* DELETE WHEN WIDTH AUTO */
+  background-color: #0c68ab;
+  font-weight: 900;
+}
+
+.paging a:hover{
+  background-color: #114f7c;
+}
+
+.paging input{
+  text-align: center;
+  width: 30px;
+  outline: none;
+  margin-top: 7px;
+  border: 0 none;
+}

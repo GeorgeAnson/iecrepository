@@ -11,8 +11,10 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.osms.dao.IntroduceDao;
 import com.osms.dao.UserDao;
 import com.osms.dao.UserTypeDao;
+import com.osms.entity.Introduce;
 import com.osms.entity.UserType;
 import com.osms.entity.Users;
 import com.osms.globle.Constants;
@@ -33,6 +35,9 @@ public class LoginAction extends HttpServlet{
 	
 	@Autowired
 	UserTypeDao userTypeDao;
+	
+	@Autowired
+	IntroduceDao introduceDao;
 	
 	String OK_URL=null;
 	String ERROR_URL=null;
@@ -78,6 +83,9 @@ public class LoginAction extends HttpServlet{
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		saveUserInfo(request, user);
+		//get introduce
+		Introduce introduce=introduceDao.getIntroduceByIntroduceId(1);
+		request.getSession().setAttribute(Constants.INTRODUCE, introduce.getIntroduceContent());
 		request.getRequestDispatcher(OK_URL).forward(request, response);
 	}
 

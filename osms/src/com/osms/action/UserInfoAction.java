@@ -46,6 +46,7 @@ import com.osms.globle.Constants;
 import com.osms.service.AMCService;
 import com.osms.service.UserService;
 import com.osms.utils.ControllerUtil;
+import com.osms.utils.JSONUtil;
 import com.osms.utils.Utils;
 
 import net.sf.json.JSONArray;
@@ -125,6 +126,8 @@ public class UserInfoAction extends HttpServlet {
 			filenames=Utils.savePic(images, parentPath);
 		}
 		Users user=new Users();
+		//String jsonString =request.getParameter("user").trim();
+		//user=(Users) JSONUtil.jsonToBean(jsonString, user.getClass());
 		//match form's parmas
 		matchParmas(parmas, user, filenames);
 		
@@ -212,9 +215,6 @@ public class UserInfoAction extends HttpServlet {
 		EducationOnUser educationOnUser=new EducationOnUser();
 		
 		educationOnUser.setStatus(1);
-		user.setUserTypeId( Integer.parseInt(Constants.STUDENT));
-		user.setPassword(Utils.toMD5("123456"));
-		user.setRegisterDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
 		user.setStatus(1);
 		IdentityOnUser identityOnUser=new IdentityOnUser();
 		identityOnUser.setStatus(1);
@@ -226,7 +226,6 @@ public class UserInfoAction extends HttpServlet {
 		studyPeriod.setStatus(1);
 		SchoolRoll schoolRoll=new SchoolRoll();
 		schoolRoll.setStatus(1);
-		schoolRoll.setPlace(Constants.SOFTWARE_OWNER);
 		Passport passport=new Passport();
 		passport.setStatus(1);
 		List<PassportOnUser> passportOnUsers=new ArrayList<PassportOnUser>();
@@ -368,10 +367,6 @@ public class UserInfoAction extends HttpServlet {
 			if(entry.getKey().equals("studentNumber"))
 			{
 				schoolRoll.setStudentNumber(entry.getValue());
-			}
-			if(entry.getKey().equals("studentNumber"))
-			{
-				schoolRoll.setStudentNumber("studentNumber");
 			}
 			if(entry.getKey().equals("dormitoryNumber"))
 			{

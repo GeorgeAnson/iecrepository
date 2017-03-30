@@ -16,7 +16,7 @@
 			<div class="navigation">
 				<ul class="nav nav-stacked">
 					<li class="active"><a
-						href="${pageContext.request.contextPath}/index.html"> <i
+						href="${pageContext.request.contextPath}/index.html?type=init"> <i
 							class="icon-desktop"></i> <span>Home</span>
 					</a></li>
 
@@ -122,7 +122,7 @@
 				</div>
 				<ul class="nav nav-stacked">
 					<li class=""><a
-						href="${pageContext.request.contextPath}/index.html"> <i
+						href="${pageContext.request.contextPath}/index.html?type=init"> <i
 							class="icon-desktop"></i> <span>首页</span>
 					</a></li>
 					<c:if test="${user.userTypeId==1 or user.userTypeId==2}">

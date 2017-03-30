@@ -45,6 +45,7 @@ import com.osms.service.AMCService;
 import com.osms.service.UserService;
 import com.osms.utils.Utils;
 
+
 @Component
 public class AddStudentAction extends HttpServlet {
 
@@ -135,6 +136,8 @@ public class AddStudentAction extends HttpServlet {
 		// TODO Auto-generated method stub
 		Map<String, String> parmas=new HashMap<String, String>();
 		List<byte[]> images=Utils.analysisForm(request, parmas);
+		//check
+		checkParmas(parmas, request, response);
 		//save picture
 		String parentPath=request.getSession().getServletContext().getRealPath("\\Passports");
 		List<String> filenames=Utils.savePic(images, parentPath);
@@ -145,13 +148,60 @@ public class AddStudentAction extends HttpServlet {
 		System.out.println(user);
 		
 		//save a student
-		userService.updateStudent(user);
-		
+		userService.saveStudent(user);
 		//request
 		request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
 	}
 
 	
+	private void checkParmas(Map<String, String> parmas, HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String ERROR="";
+		int status=0;
+		for(Entry<String, String> entry:parmas.entrySet())
+		{
+			if(entry.getKey().equals("email"))
+			{
+				status=userService.checkEmail(entry.getValue());
+			    if(status==-1)
+			    {
+			    	ERROR="该邮箱已被注册";
+			    }
+				if(status==1)
+				{
+					ERROR="邮箱格式不正确";
+				}
+			}
+			if(entry.getKey().equals("adjectivePhone")||entry.getKey().equals("overseasPhone"))
+			{
+				status=userService.checkPhone(entry.getValue());
+				if(status==-1)
+			    {
+			      ERROR="该手机号已被注册"; 
+			    }
+				if(status==1)
+				{
+					ERROR="手机格式不正确";
+				}
+			}
+			if(entry.getKey().equals("studentNumber")||entry.getKey().equals("scardNumber"))
+			{
+				status=userService.checkCard(entry.getValue());
+				if(status==1)
+				{
+					ERROR="卡号长度不正确";
+				}
+			}
+		}
+		if(status!=0)
+		{
+			request.getSession().setAttribute(Constants.ERROR, ERROR);
+			request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+			return;
+		}
+	}
+
 	private void matchParmas(Map<String, String> parmas, Users user, List<String> filenames) {
 		// TODO Auto-generated method stub
 		List<FundingOnUser> fundingOnUsers=new ArrayList<FundingOnUser>();
@@ -321,10 +371,6 @@ public class AddStudentAction extends HttpServlet {
 			if(entry.getKey().equals("studentNumber"))
 			{
 				schoolRoll.setStudentNumber(entry.getValue());
-			}
-			if(entry.getKey().equals("studentNumber"))
-			{
-				schoolRoll.setStudentNumber("studentNumber");
 			}
 			if(entry.getKey().equals("dormitoryNumber"))
 			{

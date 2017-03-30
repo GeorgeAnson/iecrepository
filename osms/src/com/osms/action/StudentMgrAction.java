@@ -170,11 +170,12 @@ public class StudentMgrAction extends HttpServlet {
 		}
 		searchForm.setPages(pages);
 		//get current page
-		int currentPage=Integer.parseInt(page)+1;
+		int currentPage=Integer.parseInt(page);
 		if(currentPage<=0||currentPage>pages)
 		{
 			currentPage=Integer.parseInt(Constants.SEARCH_INIT_NUM);
 		}
+		System.out.println(currentPage);
 		searchForm.setPage(currentPage);
 		System.out.println(searchForm.getAcademyId()+"  "+searchForm.getMajorId()+"  "+searchForm.getCclassId());
 		System.out.println(count+"  "+count/(limit*1.0));

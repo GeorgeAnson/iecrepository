@@ -179,7 +179,7 @@ public class TeacherMgrAction extends HttpServlet {
 		}
 		searchForm.setPages(pages);
 		//get current page
-		int currentPage=Integer.parseInt(page)+1;
+		int currentPage=Integer.parseInt(page);
 		if(currentPage<=0||currentPage>pages)
 		{
 			currentPage=Integer.parseInt(Constants.SEARCH_INIT_NUM);

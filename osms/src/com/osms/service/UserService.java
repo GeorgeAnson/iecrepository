@@ -36,5 +36,29 @@ public interface UserService {
 	 * @param user
 	 */
 	public void updateStudent(Users user);
+
+
+	/**
+	 * check email
+	 * @param value
+	 * @return
+	 */
+	public int checkEmail(String value);
+
+
+	/**
+	 * check phone
+	 * @param value
+	 * @return
+	 */
+	public int checkPhone(String value);
+
+
+    /**
+     * check
+     * @param value
+     * @return
+     */
+	public int checkCard(String value);
 	
 }

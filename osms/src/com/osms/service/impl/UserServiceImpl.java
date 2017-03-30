@@ -24,14 +24,11 @@ import com.osms.dao.jdbc.JDBCUtil;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.ApartmentRoll;
 import com.osms.entity.EducationOnUser;
-import com.osms.entity.FundingOnUser;
 import com.osms.entity.IdentityOnUser;
-import com.osms.entity.Passport;
 import com.osms.entity.PassportOnUser;
 import com.osms.entity.Payment;
 import com.osms.entity.SchoolRoll;
 import com.osms.entity.Users;
-import com.osms.entity.Visa;
 import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
@@ -42,6 +39,7 @@ import com.osms.service.PaymentService;
 import com.osms.service.SchoolRollService;
 import com.osms.service.UserService;
 import com.osms.service.VisaOnUserService;
+import com.osms.utils.Utils;
 
 @Service("userService")
 public class UserServiceImpl implements UserService{
@@ -260,10 +258,7 @@ public class UserServiceImpl implements UserService{
 			user.setVisaOnUser(visaOnUser);
 			//get amcOnUser, for student, he only have a amcOnUser whose status is 1
 			List<AMCOnUser> amcOnUsers=amcService.getAMCByUserId(userId);
-			if(amcOnUsers!=null)
-			{
-				user.setAmcOnUser(amcOnUsers.get(0));
-			}
+			user.setAmcOnUsers(amcOnUsers);
 			//if userId is 1, it's root, can look through payment information
 			if(user.getUserId()==1)
 			{
@@ -349,5 +344,41 @@ public class UserServiceImpl implements UserService{
 		{
 			JDBCUtil.close(conn);
 		}
+	}
+
+	@Override
+	public int checkEmail(String email) {
+		// TODO Auto-generated method stub
+		if(!Utils.isEmail(email))
+		{
+			return 1;
+		}else if(userDao.getUserByCondition(email, 1)!=null)
+		{
+			return -1;
+		}
+		return 0;
+	}
+
+	@Override
+	public int checkPhone(String phone) {
+		// TODO Auto-generated method stub
+		if(!Utils.isPhone(phone))
+		{
+			return 1;
+		}else if(userDao.getUserByCondition(phone, 1)!=null)
+		{
+			return -1;
+		}
+		return 0;
+	}
+
+	@Override
+	public int checkCard(String cardNumber) {
+		// TODO Auto-generated method stub
+		if(cardNumber.length()!=11)
+		{
+			return 1;
+		}
+		return 0;
 	}
 }

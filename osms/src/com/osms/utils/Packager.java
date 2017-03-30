@@ -11,6 +11,7 @@ import com.osms.entity.EducationOnUser;
 import com.osms.entity.EducationType;
 import com.osms.entity.FundingOnUser;
 import com.osms.entity.IdentityOnUser;
+import com.osms.entity.Introduce;
 import com.osms.entity.FundingType;
 import com.osms.entity.Guarantee;
 import com.osms.entity.Major;
@@ -539,5 +540,22 @@ public class Packager {
 		payment.setDescrible(rs.getString("describle"));
 		payment.setStatus(rs.getInt("paymentStatus"));
 		return payment;
+	}
+	
+	
+	/**
+	 * package introduce of academy
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	public static Introduce PackagerIntroduce(ResultSet rs) throws SQLException
+	{
+		Introduce introduce=new Introduce();
+		introduce.setIntroduceId(rs.getInt("introduceId"));
+		introduce.setIntroduceContent(rs.getString("introduceContent"));
+		introduce.setPublishDate(rs.getDate("publishDate"));
+		introduce.setIntroduceStatus(rs.getInt("introduceStatus"));
+		return introduce;
 	}
 }

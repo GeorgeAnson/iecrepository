@@ -29,13 +29,14 @@ public class IndexAction extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String type=request.getParameter("type").trim();
+		
 		Users user=(Users) request.getSession().getAttribute(Constants.USER);
 		if(user==null)
 		{
 			response.sendRedirect(request.getContextPath()+"/login.jsp");
 			return;
 		}
+		String type=request.getParameter("type").trim();
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
 			initPage(request, response);

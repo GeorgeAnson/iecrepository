@@ -21,14 +21,14 @@ import com.osms.bean.VisaForm;
 import com.osms.dao.SearchByPagesDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
+import com.osms.entity.PassportOnUser;
 import com.osms.entity.Payment;
 import com.osms.entity.Users;
-import com.osms.entity.Visa;
 import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
+import com.osms.service.PassportOnUserService;
 import com.osms.service.PaymentService;
-import com.osms.service.UserService;
 import com.osms.service.VisaOnUserService;
 
 @Component
@@ -50,6 +50,9 @@ public class VisaAction extends HttpServlet {
 	
 	@Autowired
 	VisaOnUserService visaOnUserService;
+	
+	@Autowired
+	PassportOnUserService passportOnUserService;
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -62,7 +65,30 @@ public class VisaAction extends HttpServlet {
 		}
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
-			initPage(request, response);
+			if(usr.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
+			{
+				//get user by amcOnUser
+				List<Payment> payments=paymentService.searchByPaymentOnUserId(usr.getUserId());
+				List<VisaForm> visas=new ArrayList<VisaForm>();
+				for(Payment p:payments)
+				{
+					VisaForm visaForm=new VisaForm();
+					visaForm.setPayment(p);
+					visaForm.setUser(p.getUser());
+					VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(p.getUser().getUserId());
+					List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(p.getUser().getUserId());
+					visaForm.setVisaOnUser(visaOnUser);
+					visaForm.setPassportOnUsers(passportOnUsers);
+					visas.add(visaForm);
+					System.out.println(visaForm);
+				}
+				request.getSession().setAttribute("visaForms", visas);
+				request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+				return;
+			}else
+			{
+				initPage(request, response);
+			}
 		}
 		if(Constants.SEARCH.toLowerCase().equals(type.toLowerCase()))
 		{
@@ -129,6 +155,10 @@ public class VisaAction extends HttpServlet {
 			visaForm.setUser(p.getUser());
 			VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(p.getUser().getUserId());
 			visaForm.setVisaOnUser(visaOnUser);
+			List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(p.getUser().getUserId());
+			visaForm.setPassportOnUsers(passportOnUsers);
+			System.out.println(passportOnUsers);
+
 			visas.add(visaForm);
 			System.out.println(visaForm);
 		}
@@ -200,17 +230,17 @@ public class VisaAction extends HttpServlet {
 			return;
 		}
 		parma.put("userType", Constants.STUDENT);
-		if(academyId!=null&&!"".equals(academyId))
+		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
 		{
 			parma.put("academy", Integer.parseInt(academyId));
 			searchForm.setAcademyId(Integer.parseInt(academyId));
 		}
-		if(majorId!=null&&!"".equals(majorId))
+		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
 		{
 			parma.put("major", Integer.parseInt(majorId));
 			searchForm.setMajorId(Integer.parseInt(majorId));
 		}
-		if(cclassId!=null&&!"".equals(cclassId))
+		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
 		{
 			parma.put("cclass", Integer.parseInt(cclassId));
 			searchForm.setCclassId(Integer.parseInt(cclassId));

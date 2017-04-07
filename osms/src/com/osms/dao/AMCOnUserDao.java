@@ -97,4 +97,11 @@ public interface AMCOnUserDao {
 	 */
 	public void update(AMCOnUser amcOnUser, Connection conn);
 
+	/**
+	 * get userIds by conditions
+	 * @param amc
+	 * @return
+	 */
+	public List<Integer> getUserIdsByConditions(AMCOnUser amc);
+
 }

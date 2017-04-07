@@ -70,6 +70,11 @@ public class SchoolRollServiceImpl implements SchoolRollService {
 			RollStatusType rollStatusType=rollStatusTypeDao.getStatusByStatusId(schoolRoll.getRollStatusTypeId());
 			schoolRoll.setRollStatusType(rollStatusType);
 		}
+		if(schoolRoll!=null&&schoolRoll.getStudentTypeId()!=0)
+		{
+			StudentType studentType=studentTypeDao.getStudentTypeByTypeId(schoolRoll.getStudentTypeId());
+			schoolRoll.setStudentType(studentType);
+		}
 		return schoolRoll;
 	}
 

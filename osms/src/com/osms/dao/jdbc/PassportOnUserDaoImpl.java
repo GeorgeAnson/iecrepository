@@ -62,7 +62,7 @@ public class PassportOnUserDaoImpl extends JDBCBase implements PassportOnUserDao
 		PreparedStatement ps=null;
 		ResultSet rs=null;
 		List<PassportOnUser> passportOnUsers=new ArrayList<PassportOnUser>();
-		String sql="SELECT DISTINCT * FROM PassportOnUser WHERE passportOnUserStatus=1 AND passportOnUserUser="+userId;
+		String sql="SELECT DISTINCT * FROM PassportOnUser WHERE passportOnUserStatus=1 AND passportOnUserUser="+userId+" ORDER BY passportPagePath DESC";
 		try {
 			ps=conn.prepareStatement(sql);
 			rs=query(ps);

@@ -78,6 +78,7 @@ public class AddStudentAction extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		request.getSession().setAttribute(Constants.ERROR, "");
 		String type=request.getParameter("type").trim();
 		Users usr=(Users) request.getSession().getAttribute(Constants.USER);
 		if(usr==null)
@@ -137,24 +138,31 @@ public class AddStudentAction extends HttpServlet {
 		Map<String, String> parmas=new HashMap<String, String>();
 		List<byte[]> images=Utils.analysisForm(request, parmas);
 		//check
-		checkParmas(parmas, request, response);
-		//save picture
-		String parentPath=request.getSession().getServletContext().getRealPath("\\Passports");
-		List<String> filenames=Utils.savePic(images, parentPath);
-		Users user=new Users();
-		//match form's parmas
-		matchParmas(parmas, user, filenames);
-		
-		System.out.println(user);
-		
-		//save a student
-		userService.saveStudent(user);
-		//request
-		request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+		int status=checkParmas(parmas, request, response);
+		if(status!=0)
+		{
+			return;
+		}else
+		{
+			//save picture
+			String parentPath=request.getSession().getServletContext().getRealPath("\\Passports");
+			List<String> filenames=Utils.savePic(images, parentPath);
+			Users user=new Users();
+			//match form's parmas
+			matchParmas(parmas, user, filenames);
+			
+			System.out.println(user);
+			
+			//save a student
+			userService.saveStudent(user);
+			//request
+			request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+			return;
+		}
 	}
 
 	
-	private void checkParmas(Map<String, String> parmas, HttpServletRequest request, HttpServletResponse response)
+	private int checkParmas(Map<String, String> parmas, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String ERROR="";
@@ -173,7 +181,7 @@ public class AddStudentAction extends HttpServlet {
 					ERROR="邮箱格式不正确";
 				}
 			}
-			if(entry.getKey().equals("adjectivePhone")||entry.getKey().equals("overseasPhone"))
+			if(entry.getKey().equals("adjectivePhone"))
 			{
 				status=userService.checkPhone(entry.getValue());
 				if(status==-1)
@@ -187,19 +195,22 @@ public class AddStudentAction extends HttpServlet {
 			}
 			if(entry.getKey().equals("studentNumber")||entry.getKey().equals("scardNumber"))
 			{
+				System.out.println(entry.getValue()+"   "+entry.getValue().length());
 				status=userService.checkCard(entry.getValue());
 				if(status==1)
 				{
 					ERROR="卡号长度不正确";
 				}
 			}
+			if(status!=0)
+			{
+				System.out.println(ERROR);
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+				request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+				break;
+			}
 		}
-		if(status!=0)
-		{
-			request.getSession().setAttribute(Constants.ERROR, ERROR);
-			request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
-			return;
-		}
+		return status;
 	}
 
 	private void matchParmas(Map<String, String> parmas, Users user, List<String> filenames) {

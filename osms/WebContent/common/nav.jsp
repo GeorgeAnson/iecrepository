@@ -20,83 +20,51 @@
 							class="icon-desktop"></i> <span>Home</span>
 					</a></li>
 
-					<li class=""><a class="dropdown-collapse" href="#"> <i
-							class="icon-info"></i> <span>Information</span> <i
-							class="icon-angle-down angle-down"></i>
+					<li class="">
+					<a class="dropdown-collapse" href="#">
+					  <i class="icon-info"></i> <span>Bills</span>
+					   <i class="icon-angle-down angle-down"></i>
 					</a>
 						<ul class="nav nav-stacked">
-							<!-- not released
-	              <li class="">
-	                  <a href="testArrange.html">
-	                    <i class="icon-caret-right"></i>
-	                    <span>Examination arrangements</span>
-	                  </a>
-	                </li>
-	                <li class="">
-	                  <a href="resultsQuery.html">
-	                    <i class="icon-caret-right"></i>
-	                    <span>Results Query</span>
-	                  </a>
-	               </li>
-	              
-	               -->
-							<li class=""><a
-								href="${pageContext.request.contextPath}/bills.html?type=init&op=manage">
-									<i class="icon-caret-right"></i> <span>Bills Management</span>
-							</a></li>
-						</ul></li>
+							<li class="">
+							<a href="${pageContext.request.contextPath}/bills.html?type=init&op=manage">
+									<i class="icon-caret-right"></i> <span>Bills Informations</span>
+							</a>
+							</li>
+						</ul>
+					</li>
 
-					<li class=""><a class="dropdown-collapse" href="#"> <i
-							class="icon-bullhorn"></i> <span>Notice</span> <i
-							class="icon-angle-down angle-down"></i>
+					<li class="">
+					<a class="dropdown-collapse" href="#">
+					 <i class="icon-bullhorn"></i> <span>Notice</span>
+					  <i class="icon-angle-down angle-down"></i>
 					</a>
 						<ul class="nav nav-stacked">
-							<li class=""><a
-								href="${pageContext.request.contextPath}/notice.html?type=init">
-									<i class="icon-caret-right"></i> <span>Latest Notice</span>
-							</a></li>
-							<!-- 
-	                not released
-	                <li class="">
-	                  <a href="eduAnnouncment.html">
-	                    <i class="icon-caret-right"></i>
-	                    <span>Educational Announcement</span>
-	                  </a>
-	                </li>
-	                 -->
-							<li class=""><a href="${pageContext.request.contextPath}/visa.html?type=init"> <i
-									class="icon-caret-right"></i> <span>Visa Information</span>
-							</a></li>
-						</ul></li>
-
-					<!-- 
-	            
-	             <li class="">
-	              <a class="dropdown-collapse" href="#">
-	                <i class="icon-table"></i>
-	                <span>Course</span>
-	                <i class="icon-angle-down angle-down"></i>
-	              </a>
-	              <ul class="nav nav-stacked">
-	                <li class="">
-	                  <a href="currSchedule.html">
-	                    <i class="icon-caret-right"></i>
-	                    <span>Curriculum schedule</span>
-	                  </a>
-	                </li>
-	                <li class="">
-	                  <a href="teacherEva.html">
-	                    <i class="icon-caret-right"></i>
-	                    <span>Teacher evaluations</span>
-	                  </a>
-	                </li>
-	              </ul>
-	            </li>
-	             -->
-
-					<li class=""><a
-						href="${pageContext.request.contextPath}/pwd.html?type=init"> <i
-							class="icon-cogs"></i> <span>Settings</span>
+							<li class="">
+							<a href="${pageContext.request.contextPath}/notice.html?type=init">
+								<i class="icon-caret-right"></i> <span>Latest Notice</span>
+							</a>
+							</li>
+						</ul>
+						</li>
+						
+					<li class="">
+					<a class="dropdown-collapse" href="#">
+					 <i class="icon-bullhorn"></i> <span>Visa</span>
+					  <i class="icon-angle-down angle-down"></i>
+					</a>
+						<ul class="nav nav-stacked">
+							<li class="">
+							<a href="${pageContext.request.contextPath}/visa.html?type=init"> 
+							    <i class="icon-caret-right"></i> <span>Visa Information</span>
+							</a>
+							</li>
+						</ul>
+					</li>
+					
+					<li class="">
+					<a href="${pageContext.request.contextPath}/pwd.html?type=init">
+					  <i class="icon-cogs"></i> <span>Settings</span>
 					</a>
 					</li>
 				</ul>

@@ -99,19 +99,27 @@ public class NoticeAction extends HttpServlet {
 		// TODO Auto-generated method stub
 		List<Notice> notices=new ArrayList<Notice>();
 		notices=noticeDao.getAllNotice();
-		List<NoticeType> noticeTypes=noticeTypeDao.getAllNoticeType();
-		for(Notice notice:notices)
+		
+		if(notices!=null)
 		{
-			for(NoticeType noticeType:noticeTypes)
+			List<NoticeType> noticeTypes=noticeTypeDao.getAllNoticeType();
+			for(Notice notice:notices)
 			{
-				if(notice.getNoticeTypeId()==noticeType.getNoticeTypeId())
+				for(NoticeType noticeType:noticeTypes)
 				{
-					notice.setNoticeType(noticeType);
+					if(notice.getNoticeTypeId()==noticeType.getNoticeTypeId())
+					{
+						notice.setNoticeType(noticeType);
+					}
 				}
 			}
 		}
 		//new notice
-		Notice notice=noticeDao.getNoticeByNoticeId(notices.get(0).getId());
+		Notice notice=null;
+		if(!notices.isEmpty()&&notices.size()>0)
+		{
+			notice=noticeDao.getNoticeByNoticeId(notices.get(0).getId());
+		}
 		//history notices
 		request.getSession().setAttribute("currentNotice", notice);
 		request.getSession().setAttribute("notices", notices);

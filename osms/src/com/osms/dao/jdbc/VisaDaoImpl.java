@@ -11,7 +11,6 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.osms.dao.VisaDao;
-import com.osms.entity.Guarantee;
 import com.osms.entity.Visa;
 import com.osms.utils.Packager;
 

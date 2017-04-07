@@ -112,7 +112,9 @@ public class Constants {
 	
 	public static final String EXCEL = "excel";
 	
-	public static final String WORD = "word";
+	public static final String TABLE = "table";
+	
+	public static final String DOC = "document";
 	
 	public static final String DELETE = "del";
 	
@@ -134,5 +136,7 @@ public class Constants {
 	public static final String WORDS = "words";
 	
 	public static final String INTRODUCE = "introduce";
+	
+	public static final String DETAIL = "detail";
 	
 }

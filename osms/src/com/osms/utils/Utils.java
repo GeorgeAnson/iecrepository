@@ -317,4 +317,40 @@ public class Utils {
 			}
 		}
 	}
+
+
+	/**
+	 * format year
+	 * @param birthday
+	 * @return
+	 */
+	public static String formatYear(java.util.Date date) {
+		// TODO Auto-generated method stub
+		return new SimpleDateFormat("yyyy").format(date);
+	}
+
+
+
+	/**
+	 * format month
+	 * @param date
+	 * @return
+	 */
+	public static String formatMonth(java.util.Date date) {
+		// TODO Auto-generated method stub
+		return new SimpleDateFormat("MM").format(date);
+	}
+
+
+
+	/**
+	 * format day
+	 * @param date
+	 * @return
+	 */
+	public static String formatDay(java.util.Date date) {
+		// TODO Auto-generated method stub
+		return new SimpleDateFormat("dd").format(date);
+	}
+	
 }

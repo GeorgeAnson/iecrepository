@@ -132,4 +132,47 @@ public class PaymentServiceImpl implements PaymentService {
 		return results;
 	}
 
+	@Override
+	public List<Payment> searchByPaymentOnUserId(int userId) {
+		// TODO Auto-generated method stub
+		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(userId);
+		List<Payment> results=new ArrayList<Payment>();
+		for(Payment p:payments)
+		{
+			//get a userId
+			int user=p.getUser().getUserId();
+			double totalMoney=0;
+			double totalPaid=0;
+			List<Integer> payTypeIds=new ArrayList<Integer>();
+			payTypeIds.add(0);
+			for(Payment payment:payments)
+			{
+				if(user==payment.getUser().getUserId())
+				{
+					//the same user
+					boolean flag=true;
+					for(int payTypeId:payTypeIds)
+					{
+						//check paymentTypeId
+						if(payTypeId==payment.getPaymentType().getPaymentTypeId())
+						{
+							flag=false;
+						}
+					}
+					//different paymentTypeId
+					if(flag)
+					{
+						totalMoney+=payment.getTotalMoney();
+						payTypeIds.add(payment.getPaymentType().getPaymentTypeId());
+					}
+					totalPaid+=payment.getMoney();
+				}
+			}
+			p.setTotalMoney(totalMoney);
+			p.setMoney(totalPaid);
+			results.add(p);
+		}
+		return results;
+	}
+
 }

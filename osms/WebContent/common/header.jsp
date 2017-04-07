@@ -16,7 +16,7 @@
 			<div class="navbar">
 	        <div class="navbar-inner">
 	          <div class="container-fluid">
-	            <a class="brand" href="${pageContext.request.contextPath}/index.html">
+	            <a class="brand" href="${pageContext.request.contextPath}/index.html?type=init">
 	              <i class="fa fa-user"></i>
 	              <span class="hidden-phone">NBUT - Hello ${user.fullName}</span>
 	            </a>
@@ -57,7 +57,7 @@
 			<div class="navbar">
 	        <div class="navbar-inner">
 	          <div class="container-fluid">
-	            <a class="brand" href="${pageContext.request.contextPath}/index.html">
+	            <a class="brand" href="${pageContext.request.contextPath}/index.html?type=init">
 	              <i class="fa fa-user"></i>
 	              <span class="hidden-phone">NBUT - Hello ${user.fullName}</span>
 	            </a>

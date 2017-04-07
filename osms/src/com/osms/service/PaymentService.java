@@ -37,5 +37,11 @@ public interface PaymentService {
 	 * @return
 	 */
 	public List<Payment> searchByPaymentOnamc(IdentityHashMap<Object, Object> parma, int limit, int page, int count);
-	
+
+	/**
+	 * for student, get visa and payment
+	 * @param userId
+	 * @return
+	 */
+	public List<Payment> searchByPaymentOnUserId(int userId);
 }

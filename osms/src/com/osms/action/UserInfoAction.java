@@ -1,9 +1,7 @@
 package com.osms.action;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +44,6 @@ import com.osms.globle.Constants;
 import com.osms.service.AMCService;
 import com.osms.service.UserService;
 import com.osms.utils.ControllerUtil;
-import com.osms.utils.JSONUtil;
 import com.osms.utils.Utils;
 
 import net.sf.json.JSONArray;
@@ -179,10 +176,6 @@ public class UserInfoAction extends HttpServlet {
 		jsonArray.add(guarantees);
 		System.out.println(jsonArray);
 		ControllerUtil.out(response, jsonArray.toArray());
-//		request.getSession().setAttribute("academyMap", academyMap);
-//		request.getSession().setAttribute("majorMap", majorMap);
-//		request.getSession().setAttribute("classMap", classMap);
-//		request.getRequestDispatcher("/WEB-INF/views/studentInfo.jsp").forward(request, response);
 	}
 
 	/**
@@ -200,12 +193,14 @@ public class UserInfoAction extends HttpServlet {
 			request.getSession().setAttribute(Constants.ERROR, "用户信息获取错误，请重试");
 			request.getRequestDispatcher("/WEB-INF/views/admin/studentMgr.jsp").forward(request, response);
 			return;
+		}else
+		{
+			int userId=Integer.parseInt(id);
+			Users user=userService.getUser(userId, Constants.STUDENT);
+			System.out.println(user);
+			request.getSession().setAttribute("student", user);
+			request.getRequestDispatcher("/WEB-INF/views/studentInfo.jsp").forward(request, response);
 		}
-		int userId=Integer.parseInt(id);
-		Users user=userService.getUser(userId, Constants.STUDENT);
-		System.out.println(user);
-		request.getSession().setAttribute("student", user);
-		request.getRequestDispatcher("/WEB-INF/views/studentInfo.jsp").forward(request, response);
 	}
 
 	

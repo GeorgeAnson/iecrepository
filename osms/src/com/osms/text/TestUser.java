@@ -21,8 +21,8 @@ public class TestUser {
 	@Test
 	public void test()
 	{
-//		save();
-		pages();
+		save();
+//		pages();
 	}
 	
 	
@@ -55,16 +55,16 @@ public class TestUser {
 	
 	public void save()
 	{
-		Users user=new Users(0, "Student", 1, 1, "17855833079", 
-				"2539676270@qq.com", Utils.toMD5("123456"), Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())),
-				4, null);
+		Users user=new Users(0, "System", 1, 1, "17855833076", 
+				"123456@qq.com", Utils.toMD5("123456"), Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())),
+				1, null);
 		
 		UserDaoImpl userDao=new UserDaoImpl();
 		Connection conn=JDBCUtil.getConnection();
 		try {
 			conn.setAutoCommit(false);
 			//save a student
-//			int userId=userDao.save(user, conn);
+			int userId=userDao.save(user, conn);
 			//set userId to other object
 			//fundingOnUser 
 //			for(FundingOnUser f:user.getFundingOnUsers())
@@ -100,6 +100,7 @@ public class TestUser {
 //				passportOnUserDao.save(p, conn);
 //			}
 			//transaction commit
+			System.out.println(userId);
 			conn.commit();			
 		} catch (SQLException e) {
 			try {

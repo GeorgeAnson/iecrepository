@@ -56,5 +56,12 @@ public interface SearchByPagesDao {
 	 * @return
 	 */
 	public List<Payment> getUsersByPaymentOnamc(IdentityHashMap<Object, Object> parma, int limit, int page, int count);
+
+	/**
+	 * get for student about visa and payment
+	 * @param userId
+	 * @return
+	 */
+	public List<Payment> getUsersByPaymentOnamc(int userId);
 	
 }

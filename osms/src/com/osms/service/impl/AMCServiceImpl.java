@@ -47,7 +47,10 @@ public class AMCServiceImpl implements AMCService {
 			amc.setMajor(majorDao.getMajorByMajorId(amc.getMajorId()));
 			amc.setCclass(classDao.getClassByclassId(amc.getClassId()));
 			//match academy objects
-			academyMap.put(amc.getAcademyId(), amc.getAcademy());
+			if(amc.getAcademy()!=null)
+			{
+				academyMap.put(amc.getAcademyId(), amc.getAcademy());
+			}
 			//match major objects
 			if(amc.getAcademy()!=null&&amc.getMajor()!=null)
 			{

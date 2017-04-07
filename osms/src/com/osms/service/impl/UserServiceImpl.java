@@ -32,6 +32,7 @@ import com.osms.entity.Users;
 import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
+import com.osms.service.ApartmentRollService;
 import com.osms.service.EducationOnUserService;
 import com.osms.service.IdentityOnUserService;
 import com.osms.service.PassportOnUserService;
@@ -70,6 +71,9 @@ public class UserServiceImpl implements UserService{
 	
 	@Autowired
 	PassportOnUserDao passportOnUserDao;
+	
+	@Autowired
+	ApartmentRollService apartmentRollService;
 	
 	@Autowired
 	ApartmentRollDao apartmentRollDao;
@@ -270,11 +274,11 @@ public class UserServiceImpl implements UserService{
 			//for teacher and administrator and root
 			if(user!=null&&user.getUserId()!=0)
 			{
-				//get apartmentRoll
-				ApartmentRoll apartmentRoll=apartmentRollDao.getApartmentRollByUserId(user.getUserId());
+				//get apartmentRoll 
+				ApartmentRoll apartmentRoll=apartmentRollService.getApartmentRollByUserId(userId);
 				user.setApartmentRoll(apartmentRoll);
 				//get amcOnUsers
-				List<AMCOnUser> amcOnUsers=amcOnUserDao.getAMCOnUserByUserId(user.getUserId());
+				List<AMCOnUser> amcOnUsers=amcOnUserDao.getAMCOnUserByUserId(userId);
 				user.setAmcOnUsers(amcOnUsers);
 			}
 		}

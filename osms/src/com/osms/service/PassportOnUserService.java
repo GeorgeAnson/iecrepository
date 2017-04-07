@@ -20,4 +20,10 @@ public interface PassportOnUserService {
 	 * @return
 	 */
 	public List<PassportOnUser> getPassportOnUserByUserId(int userId);
+
+	/**
+	 * save pictures
+	 * @param passportOnUsers
+	 */
+	public void save(List<PassportOnUser> passportOnUsers);
 }

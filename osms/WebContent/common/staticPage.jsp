@@ -79,7 +79,7 @@
 					<div class="box-content">
 						<div style="text-indent: 2em; font-size: 16px;" class="scrollable"
 							data-scrollable-height="200" data-scrollable-start="top">
-							<p>Coming soon.</p>
+							${introduce}
 						</div>
 					</div>
 				</div>

@@ -40,4 +40,28 @@ public class StudentTypeDaoImpl extends JDBCBase implements StudentTypeDao {
 		return studentTypes;
 	}
 
+	@Override
+	public StudentType getStudentTypeByTypeId(int studentTypeId) {
+		// TODO Auto-generated method stub
+		Connection conn=JDBCUtil.getConnection();
+		PreparedStatement ps=null;
+		ResultSet rs=null;
+		StudentType studentType=null;
+		String sql="SELECT * FROM StudentType WHERE studentTypeStatus=1 AND studentTypeId="+studentTypeId;
+		try {
+			ps=conn.prepareStatement(sql);
+			rs=query(ps);
+			if(rs.next())
+			{
+				studentType=Packager.PackagerStudentType(rs);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			JDBCUtil.close(rs, ps, conn);
+		}
+		return studentType;
+	}
+
 }

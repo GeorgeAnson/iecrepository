@@ -17,7 +17,9 @@ import com.osms.dao.UserTypeDao;
 import com.osms.entity.Introduce;
 import com.osms.entity.UserType;
 import com.osms.entity.Users;
+import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
+import com.osms.service.VisaOnUserService;
 import com.osms.bean.LoginBean;
 import com.osms.utils.Utils;
 
@@ -38,6 +40,9 @@ public class LoginAction extends HttpServlet{
 	
 	@Autowired
 	IntroduceDao introduceDao;
+	
+	@Autowired
+	VisaOnUserService visaOnUserService;
 	
 	String OK_URL=null;
 	String ERROR_URL=null;
@@ -85,7 +90,10 @@ public class LoginAction extends HttpServlet{
 		saveUserInfo(request, user);
 		//get introduce
 		Introduce introduce=introduceDao.getIntroduceByIntroduceId(1);
-		request.getSession().setAttribute(Constants.INTRODUCE, introduce.getIntroduceContent());
+		if(introduce!=null)
+		{
+			request.getSession().setAttribute(Constants.INTRODUCE, introduce.getIntroduceContent());
+		}
 		request.getRequestDispatcher(OK_URL).forward(request, response);
 	}
 
@@ -104,6 +112,11 @@ public class LoginAction extends HttpServlet{
 		loginBean.seteName(userType.geteName());
 		session.setAttribute("loginBean", loginBean);
 		
+		if(user.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
+		{
+			VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(user.getUserId());
+			session.setAttribute("visaOnUser",visaOnUser);
+		}		
 		session.setAttribute(Constants.USER, user);
 	}
 

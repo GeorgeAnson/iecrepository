@@ -15,8 +15,6 @@ import com.osms.entity.CClass;
 import com.osms.entity.Major;
 import com.osms.utils.Packager;
 
-import jdk.nashorn.internal.scripts.JD;
-
 @Repository("amcOnUserDao")
 public class AMCOnUserDaoImpl extends JDBCBase implements AMCOnUserDao {
 
@@ -250,6 +248,7 @@ public class AMCOnUserDaoImpl extends JDBCBase implements AMCOnUserDao {
 		PreparedStatement ps=null;
 		ResultSet rs=null;
 		StringBuilder sql=new StringBuilder("SELECT amcOnUserId FROM AMCOnUser WHERE amcOnUserUser=? AND academy=? AND major=? AND cclass=? AND amcOnUserStatus=1");
+		//StringBuilder sql=new StringBuilder("SELECT amcOnUserId FROM AMCOnUser WHERE amcOnUserStatus=1");
 		ArrayList<Object> parma=new ArrayList<Object>();
 		int id=0;
 		parma.add(amcOnUser.getUserId());
@@ -352,5 +351,48 @@ public class AMCOnUserDaoImpl extends JDBCBase implements AMCOnUserDao {
 		sql.append(" WHERE amcOnUserId=?");
 		parma.add(amcOnUser.getId());
 		update(sql.toString(), parma.toArray(), conn);
+	}
+
+	@Override
+	public List<Integer> getUserIdsByConditions(AMCOnUser amc) {
+		// TODO Auto-generated method stub
+		Connection conn=JDBCUtil.getConnection();
+		PreparedStatement ps=null;
+		ResultSet rs=null;
+		//StringBuilder sql=new StringBuilder("SELECT amcOnUserId FROM AMCOnUser WHERE amcOnUserUser=? AND academy=? AND major=? AND cclass=? AND amcOnUserStatus=1");
+		StringBuilder sql=new StringBuilder("SELECT amcOnUserUser FROM AMCOnUser WHERE amcOnUserStatus=1 AND amcOnUserUser IS NOT NULL");
+		ArrayList<Object> parma=new ArrayList<Object>();
+		List<Integer> userIds=new ArrayList<>();
+		if(amc.getAcademyId()!=0)
+		{
+			sql.append(" AND academy=?");
+			parma.add(amc.getAcademyId());
+		}
+		if(amc.getMajorId()!=0)
+		{
+			sql.append(" AND major=?");
+			parma.add(amc.getMajorId());
+		}
+		if(amc.getClassId()!=0)
+		{
+			sql.append(" AND cclass=?");
+			parma.add(amc.getClassId());
+		}
+		System.out.println(sql.toString());
+		try {
+			ps=conn.prepareStatement(sql.toString());
+			rs=query(ps, parma.toArray());
+			while(rs.next())
+			{
+				userIds.add(rs.getInt("amcOnUserUser"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally
+		{
+			JDBCUtil.close(rs, ps, conn);
+		}
+		return userIds;
 	}
 }

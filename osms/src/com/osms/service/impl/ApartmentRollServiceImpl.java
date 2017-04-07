@@ -21,7 +21,11 @@ public class ApartmentRollServiceImpl implements ApartmentRollService {
 	public ApartmentRoll getApartmentRollByUserId(int userId) {
 		// TODO Auto-generated method stub
 		ApartmentRoll apartmentRoll=apartmentRollDao.getApartmentRollByUserId(userId);
-		ProfessionalTitleType professionalTitleType=professionalTypeDao.getProfessionalTypeBytypeId(apartmentRoll.getProfessionalTitleTypeId());
+		ProfessionalTitleType professionalTitleType=null;
+		if(apartmentRoll!=null)
+		{
+			professionalTitleType=professionalTypeDao.getProfessionalTypeBytypeId(apartmentRoll.getProfessionalTitleTypeId());
+		}
 		apartmentRoll.setfProfessionalTitleType(professionalTitleType);
 		return apartmentRoll;
 	}

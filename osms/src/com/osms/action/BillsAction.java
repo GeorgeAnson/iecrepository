@@ -32,6 +32,7 @@ import com.osms.entity.Users;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
 import com.osms.service.PaymentService;
+import com.osms.utils.ControllerUtil;
 import com.osms.utils.Utils;
 
 @Component
@@ -66,16 +67,34 @@ public class BillsAction extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String type=request.getParameter("type").trim();
+		request.getSession().setAttribute(Constants.ERROR, "");
 		Users user=(Users) request.getSession().getAttribute(Constants.USER);
 		if(user==null)
 		{
 			response.sendRedirect(request.getContextPath()+"/login.jsp");
+			return;
 		}
-		
+		String type=request.getParameter("type").trim();
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
-			initBillsPage(request, response);
+			System.out.println(user.getUserTypeId());
+			if(user.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
+			{
+				List<Payment> payments=paymentService.searchByPaymentOnUserId(user.getUserId());
+				
+				for(Payment p:payments)
+				{
+					Users oprUser=userDao.getUserByUserId(p.getPaymentOprUser());
+					p.setOprUser(oprUser);
+					System.out.println(p);
+				}
+				request.getSession().setAttribute("payments", payments);
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}else
+			{
+				initBillsPage(request, response);
+			}
 		}
 		
 		if(Constants.ADD.toLowerCase().equals(type.toLowerCase()))
@@ -87,6 +106,35 @@ public class BillsAction extends HttpServlet {
 		{
 			SearchBills(request, response);
 		}
+		
+		if(Constants.INIT_ADD.toLowerCase().equals(type.toLowerCase()))
+		{
+			initAdd(request, response);
+		}
+		
+		if(Constants.DETAIL.toLowerCase().equals(type.toLowerCase()))
+		{
+			getDetail(request, response);
+		}
+	}
+
+	private void getDetail(HttpServletRequest request, HttpServletResponse response) {
+		// TODO Auto-generated method stub
+		int userId=request.getParameter("id").trim()==null?0:Integer.parseInt(request.getParameter("id").trim());
+		List<Payment> payments=paymentService.getPaymentByUserId(userId);
+		for(Payment payment:payments)
+		{
+			payment.setUser(userDao.getUserByUserId(payment.getUserId()));
+			payment.setOprUser(userDao.getUserByUserId(payment.getPaymentOprUser()));
+		}
+		ControllerUtil.out(response, payments);
+	}
+
+	private void initAdd(HttpServletRequest request, HttpServletResponse response) {
+		// TODO Auto-generated method stub
+		List<PaymentType> paymentTypes=new ArrayList<>();
+		paymentTypes=paymentTypeDao.getAllPaymentType();
+		ControllerUtil.out(response, paymentTypes);
 	}
 
 	/**
@@ -102,7 +150,7 @@ public class BillsAction extends HttpServlet {
 		IdentityHashMap<Object, Object> parma=new IdentityHashMap<Object, Object>();
 		SearchForm searchForm=new SearchForm();
 		//get parma
-		getParma(request, response, parma, searchForm);
+		getParma(request, response, parma, searchForm);		
 		//set tables
 		Map<String, String> table = new IdentityHashMap<String, String>();
 		table.put("Users", "userId");
@@ -155,7 +203,7 @@ public class BillsAction extends HttpServlet {
 		}
 		searchForm.setPages(pages);
 		//get current page
-		int currentPage=Integer.parseInt(page)+1;
+		int currentPage=Integer.parseInt(page);
 		if(currentPage<=0||currentPage>pages)
 		{
 			currentPage=Integer.parseInt(Constants.SEARCH_INIT_NUM);
@@ -191,17 +239,17 @@ public class BillsAction extends HttpServlet {
 			return;
 		}
 		parma.put("userType", Constants.STUDENT);
-		if(academyId!=null&&!"".equals(academyId))
+		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
 		{
 			parma.put("academy", Integer.parseInt(academyId));
 			searchForm.setAcademyId(Integer.parseInt(academyId));
 		}
-		if(majorId!=null&&!"".equals(majorId))
+		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
 		{
 			parma.put("major", Integer.parseInt(majorId));
 			searchForm.setMajorId(Integer.parseInt(majorId));
 		}
-		if(cclassId!=null&&!"".equals(cclassId))
+		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
 		{
 			parma.put("cclass", Integer.parseInt(cclassId));
 			searchForm.setCclassId(Integer.parseInt(cclassId));
@@ -236,53 +284,76 @@ public class BillsAction extends HttpServlet {
 		if(op.toLowerCase().equals("addbills".toLowerCase()))
 		{
 			String academyId=request.getParameter("academyId").trim();
+			System.out.println(academyId+"  academyId");
 			String majorId=request.getParameter("majorId").trim();
 			String cclassId=request.getParameter("cclassId").trim();
 			//get parmas
 			String paymentTypeIds=request.getParameter("paymentTypeIds").trim();
 			//check
-			check(request, response, academyId, majorId, cclassId, paymentTypeIds, totalNeeds, money, theSemester);
-			//get userIds
-			List<Integer> userIds=amcOnUserDao.getuserIdsByamc(Integer.parseInt(academyId), Integer.parseInt(majorId), Integer.parseInt(cclassId));
-			//get results
-			List<Payment> payments=matchParmas(userIds, paymentTypeIds, totalNeeds, money, majorId, schoolYear, theSemester, describle, oprUserId);
-			//save
-			paymentService.save(payments);
-			request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
-			return;
+			int status=check(request, response, academyId, majorId, cclassId, paymentTypeIds, totalNeeds, money, theSemester, op);
+			if(status!=0)
+			{
+				return;
+			}else
+			{
+				//get userIds
+				List<Integer> userIds=amcOnUserDao.getuserIdsByamc(Integer.parseInt(academyId), Integer.parseInt(majorId), Integer.parseInt(cclassId));
+				System.out.println(userIds+" ,payids "+paymentTypeIds);
+				//get results
+				List<Payment> payments=matchParmas(userIds, paymentTypeIds, totalNeeds, money, majorId, schoolYear, theSemester, describle, oprUserId);
+				System.out.println(payments);
+				//save
+				paymentService.save(payments);
+				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
+				return;
+			}
 		}else if(op.toLowerCase().equals("bills".toLowerCase()))
 		{
 			//getParmas(request, response);
 			String condition=request.getParameter("condition").trim();
 			String paymentTypeId=request.getParameter("paymentTypeId").trim();
 			
-			//judge whether parma is ok
-			judgeParma(request, response, condition, totalNeeds, paymentTypeId, money);
-			//get user object
-			Users user=userDao.getUserByCondition(condition, 1);
-			if(user==null)
+			if(paymentTypeId==null||"".equals(paymentTypeId))
 			{
-				request.getSession().setAttribute(Constants.ERROR, "用户不存在，请检查输入手机号/邮箱是否正确");
+				request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
 				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
 				return;
 			}
-			//save a payment object
-			Payment payment=new Payment();
-			payment.setUserId(user.getUserId());
-			payment.setPaymentTypeId(Integer.parseInt(paymentTypeId));
-			payment.setSchoolYear(schoolYear);
-			payment.setTheSemester(Integer.parseInt(theSemester));
-			payment.setTotalMoney(Double.parseDouble(totalNeeds));
-			payment.setMoney(Double.parseDouble(money));
-			payment.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
-			payment.setDescrible(describle);
-			payment.setStatus(1);
-			payment.setPaymentOprUser(oprUserId);
-			//save
-			paymentDao.save(payment);
 			
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			//judge whether parma is ok
+			int status=judgeParma(request, response, condition, money, totalNeeds, op);
+			if(status!=0)
+			{
+				return;
+			}else
+			{
+				//get user object
+				Users user=userDao.getUserByCondition(condition, 1);
+				if(user==null)
+				{
+					request.getSession().setAttribute(Constants.ERROR, "用户不存在，请检查输入手机号/邮箱是否正确");
+					request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+					return;
+				}
+				//save a payment object
+				Payment payment=new Payment();
+				payment.setUserId(user.getUserId());
+				payment.setPaymentTypeId(Integer.parseInt(paymentTypeId));
+				payment.setSchoolYear(schoolYear);
+				payment.setTheSemester(Integer.parseInt(theSemester));
+				payment.setTotalMoney(Double.parseDouble(totalNeeds));
+				payment.setMoney(Double.parseDouble(money));
+				payment.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
+				payment.setDescrible(describle);
+				payment.setStatus(1);
+				payment.setPaymentOprUser(oprUserId);
+				//save
+				paymentDao.save(payment);
+				
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}
+			
 		}
 	}
 
@@ -340,23 +411,31 @@ public class BillsAction extends HttpServlet {
 	 * @param money
 	 * @param schoolYear
 	 * @param theSemester
+	 * @param op 
 	 * @throws IOException 
 	 * @throws ServletException 
 	 */
-	private void check(HttpServletRequest request, HttpServletResponse response, 
+	private int check(HttpServletRequest request, HttpServletResponse response, 
 			String academyId, String majorId, String cclassId, String paymentTypeIds, String totalNeeds,
-			String money, String theSemester) throws ServletException, IOException {
+			String money, String theSemester, String op) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		judgeParma(request, response, theSemester, paymentTypeIds, money, totalNeeds);
-		
-		if(academyId==null||"".equals(academyId)
+		int status=0;
+		if(academyId==null||"".equals(academyId)||"0".equals(academyId)
 				||majorId==null||"".equals(majorId)
 				||cclassId==null||"".equals(cclassId))
 		{
-			request.getSession().setAttribute(Constants.ERROR, "不能留空");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			request.getSession().setAttribute(Constants.ERROR, "学院、专业、班级均不能留空");
+			request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
+			return 1;
 		}
+		if(paymentTypeIds==null||"".equals(paymentTypeIds))
+		{
+			request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
+			request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
+			return 1;
+		}
+		status=judgeParma(request, response, theSemester, money, totalNeeds, op);
+		return status;
 	}
 
 	/**
@@ -364,47 +443,59 @@ public class BillsAction extends HttpServlet {
 	 * @param request 
 	 * @param response 
 	 * @param condition
-	 * @param paymentTypeId
+	 * @param paymentTypeIds
 	 * @param money
 	 * @param money2 
+	 * @return 
 	 * @throws IOException 
 	 * @throws ServletException 
 	 */
-	private void judgeParma(HttpServletRequest request, HttpServletResponse response,
-			String condition, String paymentTypeId, String money, String totalNeeds)
+	private int judgeParma(HttpServletRequest request, HttpServletResponse response,
+			String condition, String money, String totalNeeds, String op)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		int status=0;
+		//conditions->semester,conditions to add single
 		if(condition==null||"".equals(condition)
 				||money==null||"".equals(money)
 				||totalNeeds==null||"".equals(totalNeeds))
 		{
 			request.getSession().setAttribute(Constants.ERROR, "不能留空");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			status=1;
 		}
 		
 		double needs=Double.parseDouble(totalNeeds);
 		if(needs<0)
 		{
 			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			status=1;
 		}
 		
 		double pay=Double.parseDouble(money);
 		if(pay<0)
 		{
 			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			status=1;
 		}
 		
 		if(needs<pay)
 		{
 			request.getSession().setAttribute(Constants.ERROR, "应缴金额小于实缴金额");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
+			status=1;
 		}
+		
+		if(status!=0)
+		{
+			if(op.toLowerCase().equals("addbills".toLowerCase()))
+			{
+				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
+			}else
+			{
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+			}
+		}
+		
+		return status;
 	}
 
 

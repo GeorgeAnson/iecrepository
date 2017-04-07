@@ -1,5 +1,7 @@
 package com.osms.service.impl;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.osms.dao.PassportDao;
 import com.osms.dao.PassportOnUserDao;
+import com.osms.dao.jdbc.JDBCUtil;
 import com.osms.entity.Passport;
 import com.osms.entity.PassportOnUser;
 import com.osms.service.PassportOnUserService;
@@ -55,4 +58,28 @@ public class PassportOnUserServiceImpl implements PassportOnUserService {
 		return passportOnUsers;
 	}
 
+	@Override
+	public void save(List<PassportOnUser> passportOnUsers) {
+		// TODO Auto-generated method stub
+		Connection conn=JDBCUtil.getConnection();
+		try {
+			conn.setAutoCommit(false);
+			for(PassportOnUser passportOnUser:passportOnUsers)
+			{
+				passportOnUserDao.save(passportOnUser, conn);
+			}
+			conn.commit();
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			JDBCUtil.close(conn);
+		}	
+	}
 }

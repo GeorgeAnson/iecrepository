@@ -19,15 +19,19 @@ import org.springframework.stereotype.Component;
 
 import com.osms.bean.AcademyMajorBean;
 import com.osms.bean.SearchForm;
+import com.osms.dao.ProfessionalTypeDao;
 import com.osms.dao.SearchByPagesDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
 import com.osms.entity.ApartmentRoll;
+import com.osms.entity.ProfessionalTitleType;
 import com.osms.entity.Users;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
 import com.osms.service.ApartmentRollService;
 import com.osms.service.UserService;
+import com.osms.utils.ControllerUtil;
+import com.osms.utils.JSONUtil;
 import com.osms.utils.Utils;
 
 @Component
@@ -49,10 +53,14 @@ public class TeacherMgrAction extends HttpServlet {
 	
 	@Autowired
 	ApartmentRollService apartmentRollService;
+	
+	@Autowired
+	ProfessionalTypeDao professionalTypeDao;
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		request.getSession().setAttribute(Constants.ERROR, "");
 		Users usr=(Users) request.getSession().getAttribute(Constants.USER);
 		if(usr==null)
 		{
@@ -72,8 +80,63 @@ public class TeacherMgrAction extends HttpServlet {
 		{
 			searchTeachers(request, response);
 		}
+		if(Constants.DETAIL.toLowerCase().equals(type.toLowerCase()))
+		{
+			findTeacher(request, response);
+		}
+		if(Constants.UPDATE.toLowerCase().equals(type.toLowerCase()))
+		{
+			updateTeacher(request, response);
+		}
 	}
 	
+	/**
+	 * update a teacher's information
+	 * @param request
+	 * @param response
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	private void updateTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String jsonString=request.getParameter("teacher").trim();
+		Users teacher=(Users) JSONUtil.jsonToBean(jsonString, Users.class);
+		
+		int status=checkInfo(request, response, teacher);
+		if(status!=0)
+		{
+			return;
+		}else
+		{
+			userService.saveTeacher(teacher);
+			return;
+		}	
+	}
+
+	/**
+	 * get a teacher's information 
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	private void findTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String id=request.getParameter("id").trim();
+		if(id ==null||"".equals(id))
+		{
+			request.getSession().setAttribute(Constants.ERROR, "查询用户不存在");
+			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+			return;
+		}else
+		{
+			int userId=Integer.parseInt(id);
+			Users teacher=userService.getUser(userId, Constants.TEACHER);
+			ControllerUtil.out(response, teacher);
+			return;
+		}
+	}
+
 	/**
 	 * search teachers
 	 * @param request
@@ -105,6 +168,8 @@ public class TeacherMgrAction extends HttpServlet {
 		{
 			ApartmentRoll apartmentRoll=apartmentRollService.getApartmentRollByUserId(u.getUserId());
 			u.setApartmentRoll(apartmentRoll);
+			List<AMCOnUser> amcOnUsers=amcService.getAMCByUserId(u.getUserId());
+			u.setAmcOnUsers(amcOnUsers);
 			System.out.println(u);
 		}
 		request.getSession().setAttribute("tSearch", searchForm);
@@ -120,32 +185,38 @@ public class TeacherMgrAction extends HttpServlet {
 		// TODO Auto-generated method stub
 		for(Users u:users)
 		{
-			if(u.getAmcOnUser()!=null)
+			if(u.getUserTypeId()==4)
 			{
-				if(u.getAmcOnUser().getStatus()==-1)
+				users.remove(u);
+			}else
+			{
+				if(u.getAmcOnUser()!=null)
 				{
-					u.setAmcOnUser(null);
-				}
-				if(u.getAmcOnUser().getAcademy()!=null)
-				{
-					if(u.getAmcOnUser().getAcademy().getStatus()==-1)
+					if(u.getAmcOnUser().getStatus()==-1)
 					{
 						u.setAmcOnUser(null);
 					}
-				}
-				if(u.getAmcOnUser().getMajor()!=null)
-				{
-					if(u.getAmcOnUser().getMajor().getStatus()==-1)
+					if(u.getAmcOnUser().getAcademy()!=null)
 					{
-						u.getAmcOnUser().setMajor(null);
-						u.getAmcOnUser().setCclass(null);
+						if(u.getAmcOnUser().getAcademy().getStatus()==-1)
+						{
+							u.setAmcOnUser(null);
+						}
 					}
-				}
-				if(u.getAmcOnUser().getCclass()!=null)
-				{
-					if(u.getAmcOnUser().getCclass().getStatus()==-1)
+					if(u.getAmcOnUser().getMajor()!=null)
 					{
-						u.getAmcOnUser().setCclass(null);
+						if(u.getAmcOnUser().getMajor().getStatus()==-1)
+						{
+							u.getAmcOnUser().setMajor(null);
+							u.getAmcOnUser().setCclass(null);
+						}
+					}
+					if(u.getAmcOnUser().getCclass()!=null)
+					{
+						if(u.getAmcOnUser().getCclass().getStatus()==-1)
+						{
+							u.getAmcOnUser().setCclass(null);
+						}
 					}
 				}
 			}
@@ -201,7 +272,7 @@ public class TeacherMgrAction extends HttpServlet {
 		String majorId=request.getParameter("majorId").trim();
 		String cclassId=request.getParameter("cclassId").trim();
 		
-		parma.put("userType", Constants.STUDENT);
+		parma.put("userType", Constants.TEACHER);
 		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
 		{
 			parma.put("academy", Integer.parseInt(academyId));
@@ -231,9 +302,67 @@ public class TeacherMgrAction extends HttpServlet {
 		//user
 		Users user=new Users();
 		getParmas(request, response, user);
-		//save
-		userService.saveTeacher(user);
-	    request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+		int status=checkInfo(request, response, user);
+		if(status==0)
+		{
+			System.out.println(user);
+			//save
+			userService.saveTeacher(user);
+		    request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+		    return;
+		}else
+		{
+			return;
+		}
+		
+	}
+
+	private int checkInfo(HttpServletRequest request, HttpServletResponse response, Users user) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String ERROR="";
+		int status=0;
+		status=userService.checkEmail(user.getEmail());
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="邮箱格式不正确";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+			if(status==-1)
+			{
+				ERROR="邮箱已被注册";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		status=userService.checkCard(user.getApartmentRoll().getCardNumber());
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="卡号长度应为11位";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		status=userService.checkPhone(user.getPhone());
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="手机号码格式不正确";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+			if(status==-1)
+			{
+				ERROR="该手机号已被注册";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		if(status!=0)
+		{
+			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+		}
+		return status;
 	}
 
 	/**
@@ -295,10 +424,10 @@ public class TeacherMgrAction extends HttpServlet {
 		String majorId=request.getParameter("majorId").trim();
 		String cclassIdstr=request.getParameter("cclasIdstr").trim();
 		if(cclassIdstr==null||"".equals(cclassIdstr)||
-				academyId==null||"".equals(academyId)||
+				academyId==null||"".equals(academyId)||"0".equals(academyId)||
 				majorId==null||"".equals(majorId))
 		{
-			request.getSession().setAttribute(Constants.ERROR, "填选学院专业和班级");
+			request.getSession().setAttribute(Constants.ERROR, "填选学院、专业和班级");
 			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
 			return;
 		}
@@ -326,6 +455,13 @@ public class TeacherMgrAction extends HttpServlet {
 		request.getSession().setAttribute("academyMap", academyMap);
 		request.getSession().setAttribute("majorMap", majorMap);
 		request.getSession().setAttribute("classMap", classMap);
+		
+		
+		System.out.println(academyMap);
+		
+		List<ProfessionalTitleType> professionalTitleTyps=professionalTypeDao.getAllProfessionalType();
+		request.getSession().setAttribute("professionalTitleTypes", professionalTitleTyps);
+		
 		request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
 	}
 

@@ -1,6 +1,5 @@
 package com.osms.service;
 
-import java.util.List;
 
 import com.osms.entity.Users;
 
@@ -60,5 +59,12 @@ public interface UserService {
      * @return
      */
 	public int checkCard(String value);
+
+
+	/**
+	 * update teacher
+	 * @param teacher
+	 */
+	public void updateTeacher(Users teacher);
 	
 }

@@ -21,4 +21,11 @@ public interface ApartmentRollDao {
 	 * @return
 	 */
 	public ApartmentRoll getApartmentRollByUserId(int userId);
+
+	/**
+	 * update apartmentRoll
+	 * @param apartmentRoll
+	 * @param conn 
+	 */
+	public void update(ApartmentRoll apartmentRoll, Connection conn);
 }

@@ -174,23 +174,6 @@ public class UserDaoImpl extends JDBCBase implements UserDao{
 
 
 	@Override
-	public List<Users> getUserList(List<String> queryKeyWords) {
-		// TODO Auto-generated method stub
-		Connection conn=JDBCUtil.getConnection();
-		PreparedStatement ps=null;
-		ResultSet rs=null;
-		StringBuilder sql=new StringBuilder("SELECT ");
-		for(String item:queryKeyWords)
-		{
-			sql.append(" "+item+" ");
-		}
-		sql.append(" FROM Academy, Major, CClass, AMCOnUser, Nationality, IdentityOnUser, Passport, PassportOnUser, Payment, PaymentOnUser, RollStatusType, SchoolRoll, StudentType, StudyPeriod, Users, UserType, Visa, VisaOnUser");
-		sql.append(" WHERE ");
-		return null;
-	}
-
-
-	@Override
 	public void update(Users user, Connection conn) {
 		// TODO Auto-generated method stub
 		StringBuilder sql= new StringBuilder("UPDATE Users SET gender=?");

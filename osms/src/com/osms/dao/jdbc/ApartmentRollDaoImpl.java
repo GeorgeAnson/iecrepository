@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import org.springframework.stereotype.Repository;
 
@@ -50,6 +51,29 @@ public class ApartmentRollDaoImpl extends JDBCBase implements ApartmentRollDao {
 			JDBCUtil.close(rs, ps, conn);
 		}
 		return apartmentRoll;
+	}
+
+	@Override
+	public void update(ApartmentRoll apartmentRoll, Connection conn) {
+		// TODO Auto-generated method stub
+		StringBuilder sql=new StringBuilder("UPDATE ApartmentRoll SET apartmentRollStatus=?");
+		ArrayList<Object> parmas=new ArrayList<Object>();
+		parmas.add(apartmentRoll.getStatus()==0?1:apartmentRoll.getStatus());
+		
+		if(apartmentRoll.getCardNumber()!=null)
+		{
+			sql.append(", tcardNumber=?");
+			parmas.add(apartmentRoll.getCardNumber());
+		}
+		if(apartmentRoll.getProfessionalTitleTypeId()!=0)
+		{
+			sql.append(", professionalTitleType=?");
+			parmas.add(apartmentRoll.getProfessionalTitleTypeId());
+		}
+		
+		sql.append(" WHERE apartmentRollId=?");
+		parmas.add(apartmentRoll.getId());
+		update(sql.toString(), parmas.toArray(), conn);
 	}
 
 }

@@ -53,14 +53,6 @@ public interface UserDao {
 
 
 	/**
-	 * get user for export by parmas from list
-	 * @param queryKeyWords
-	 * @return
-	 */
-	public List<Users> getUserList(List<String> queryKeyWords);
-
-
-	/**
 	 * update user
 	 * @param user
 	 * @param conn

@@ -243,6 +243,12 @@ public class UserServiceImpl implements UserService{
 		// TODO Auto-generated method stub
 		//get user
 		Users user=userDao.getUserByUserId(userId);
+		if(user!=null&&user.getUserId()!=0)
+		{
+			user.setPassword(null);
+			user.setRegisterDate(null);
+		}
+		
 		if(user!=null&&user.getUserId()!=0&&userType.equals(Constants.STUDENT))
 		{
 			//get schoolRoll
@@ -384,5 +390,51 @@ public class UserServiceImpl implements UserService{
 			return 1;
 		}
 		return 0;
+	}
+
+	@Override
+	public void updateTeacher(Users teacher) {
+		// TODO Auto-generated method stub
+		Connection conn=JDBCUtil.getConnection();
+		try {
+			conn.setAutoCommit(false);
+			//update a student
+			userDao.update(teacher, conn);
+			//amcOnUsers
+			if(teacher.getAmcOnUsers()!=null)
+			{
+				for(AMCOnUser amc:teacher.getAmcOnUsers())
+				{
+					if(amc!=null&&amc.getId()!=0)
+					{
+						amcOnUserDao.update(amc, conn);//id not null
+					}else
+					{
+						amcOnUserDao.save(amc, conn);//userId not null
+					}
+				}
+			}
+			//apartmentRoll
+			if(teacher.getApartmentRoll()!=null)
+			{
+				apartmentRollDao.update(teacher.getApartmentRoll(), conn);
+			}
+			
+			//transaction commit
+			conn.commit();
+
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally
+		{
+			JDBCUtil.close(conn);
+		}
 	}
 }

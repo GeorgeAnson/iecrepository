@@ -100,6 +100,7 @@ public class TeacherMgrAction extends HttpServlet {
 	private void updateTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String jsonString=request.getParameter("teacher").trim();
+		System.out.println(jsonString);
 		Users teacher=(Users) JSONUtil.jsonToBean(jsonString, Users.class);
 		
 		int status=checkInfo(request, response, teacher);
@@ -108,8 +109,10 @@ public class TeacherMgrAction extends HttpServlet {
 			return;
 		}else
 		{
-			userService.saveTeacher(teacher);
-			return;
+//			userService.saveTeacher(teacher);
+//			return;
+			userService.updateTeacher(teacher);
+			ControllerUtil.out(response, "sucess");
 		}	
 	}
 

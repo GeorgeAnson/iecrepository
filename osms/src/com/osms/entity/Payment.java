@@ -2,6 +2,7 @@ package com.osms.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * payment on user
@@ -33,6 +34,7 @@ public class Payment implements Serializable{
 	private Users user=null;//user object
 	private Users oprUser=null;//root's object of operation
 	private PaymentType paymentType=null;//payment type object
+	private List<PaymentType> paymentTypes=null;
 	
 	
 	public Payment()
@@ -197,13 +199,23 @@ public class Payment implements Serializable{
 	}
 
 
+	public List<PaymentType> getPaymentTypes() {
+		return paymentTypes;
+	}
+
+
+	public void setPaymentTypes(List<PaymentType> paymentTypes) {
+		this.paymentTypes = paymentTypes;
+	}
+
+
 	@Override
 	public String toString() {
 		return "Payment [id=" + id + ", userId=" + userId + ", paymentTypeId=" + paymentTypeId + ", schoolYear="
 				+ schoolYear + ", theSemester=" + theSemester + ", totalMoney=" + totalMoney + ", money=" + money
 				+ ", paymentOprUser=" + paymentOprUser + ", payDate=" + payDate + ", describle=" + describle
 				+ ", status=" + status + ", user=" + user + ", oprUser=" + oprUser + ", paymentType=" + paymentType
-				+ "]";
+				+ ", paymentTypes=" + paymentTypes + "]";
 	}
 
 

@@ -1,5 +1,6 @@
 package com.osms.dao;
 
+import java.sql.Connection;
 import java.util.List;
 
 import com.osms.entity.ProfessionalTitleType;

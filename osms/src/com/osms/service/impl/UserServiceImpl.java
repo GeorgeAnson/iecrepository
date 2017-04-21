@@ -14,6 +14,7 @@ import com.osms.dao.FundingOnUserDao;
 import com.osms.dao.IdentityOnUserDao;
 import com.osms.dao.PassportDao;
 import com.osms.dao.PassportOnUserDao;
+import com.osms.dao.ProfessionalTypeDao;
 import com.osms.dao.RollStatusTypeDao;
 import com.osms.dao.SchoolRollDao;
 import com.osms.dao.StudyPeriodDao;
@@ -405,10 +406,10 @@ public class UserServiceImpl implements UserService{
 			{
 				for(AMCOnUser amc:teacher.getAmcOnUsers())
 				{
-					if(amc!=null&&amc.getId()!=0)
+					if(amc!=null&&amc.getId()!=0&&amc.getUserId()==0)
 					{
 						amcOnUserDao.update(amc, conn);//id not null
-					}else
+					}else if(amc!=null&&amc.getId()==0&&amc.getUserId()!=0)
 					{
 						amcOnUserDao.save(amc, conn);//userId not null
 					}
@@ -420,6 +421,7 @@ public class UserServiceImpl implements UserService{
 				apartmentRollDao.update(teacher.getApartmentRoll(), conn);
 			}
 			
+			System.out.println("2  "+teacher+"  "+teacher.getAmcOnUsers()+"  "+teacher.getApartmentRoll());
 			//transaction commit
 			conn.commit();
 

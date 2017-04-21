@@ -66,48 +66,52 @@ public class ConfigAction extends HttpServlet{
 		Users user=(Users) request.getSession().getAttribute(Constants.USER);
 		if(user==null)
 		{
-		  response.sendRedirect(request.getContextPath()+"/login.jsp");	
-		}
-		String type=request.getParameter("type").trim();
-		request.getSession().setAttribute(Constants.ERROR, "");
-		//instance configuration page
-		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
+		  response.sendRedirect(request.getContextPath()+"/login.jsp");
+		  return;
+		}else
 		{
-			Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
-			Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
-			Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
-			amcService.matchAllAMC(academyMap, majorMap, classMap);
-			request.getSession().setAttribute("academyMap", academyMap);
-			request.getSession().setAttribute("majorMap", majorMap);
-			request.getSession().setAttribute("classMap", classMap);
+			String type=request.getParameter("type").trim();
+			request.getSession().setAttribute(Constants.ERROR, "");
+			//instance configuration page
+			if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
+			{
+				Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
+				Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
+				Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
+				amcService.matchAllAMC(academyMap, majorMap, classMap);
+				request.getSession().setAttribute("academyMap", academyMap);
+				request.getSession().setAttribute("majorMap", majorMap);
+				request.getSession().setAttribute("classMap", classMap);
+				
+				List<Nationality> nationalities=nationalityDao.getAllNationality();
+				request.getSession().setAttribute("nationalities", nationalities);
+
+				List<PaymentType >paymentTypes=paymentTypeDao.getAllPaymentType();
+				request.getSession().setAttribute("paymentTypes", paymentTypes);
+
+				List<RollStatusType> rollStatusTypes=rollStatusTypeDao.getAllStatus();
+				request.getSession().setAttribute("rollStatusTypes", rollStatusTypes);
+
+				List<NoticeType> noticeTypes=noticeTypeDao.getAllNoticeType();
+				request.getSession().setAttribute("noticeTypes", noticeTypes);
+				
+				List<Guarantee> guarantees=guaranteeDao.getAllGuarantee();
+				request.getSession().setAttribute("guarantees", guarantees);
+				request.getRequestDispatcher("/WEB-INF/views/admin/config.jsp").forward(request, response);
+			}
 			
-			List<Nationality> nationalities=nationalityDao.getAllNationality();
-			request.getSession().setAttribute("nationalities", nationalities);
-
-			List<PaymentType >paymentTypes=paymentTypeDao.getAllPaymentType();
-			request.getSession().setAttribute("paymentTypes", paymentTypes);
-
-			List<RollStatusType> rollStatusTypes=rollStatusTypeDao.getAllStatus();
-			request.getSession().setAttribute("rollStatusTypes", rollStatusTypes);
-
-			List<NoticeType> noticeTypes=noticeTypeDao.getAllNoticeType();
-			request.getSession().setAttribute("noticeTypes", noticeTypes);
-			
-			List<Guarantee> guarantees=guaranteeDao.getAllGuarantee();
-			request.getSession().setAttribute("guarantees", guarantees);
-			request.getRequestDispatcher("/WEB-INF/views/admin/config.jsp").forward(request, response);
+			//add configuration information
+			if(Constants.ADD.toLowerCase().equals(type.toLowerCase()))
+			{
+				addCondiguration(request, response);
+			}
+			//delete
+			if(Constants.DELETE.toLowerCase().equals(type.toLowerCase()))
+			{
+				delConfiguration(request, response);
+			}
 		}
 		
-		//add configuration information
-		if(Constants.ADD.toLowerCase().equals(type.toLowerCase()))
-		{
-			addCondiguration(request, response);
-		}
-		//delete
-		if(Constants.DELETE.toLowerCase().equals(type.toLowerCase()))
-		{
-			delConfiguration(request, response);
-		}
 	}
 	
 

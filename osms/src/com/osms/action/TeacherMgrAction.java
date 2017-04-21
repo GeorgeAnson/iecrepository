@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,10 +22,14 @@ import com.osms.bean.AcademyMajorBean;
 import com.osms.bean.SearchForm;
 import com.osms.dao.ProfessionalTypeDao;
 import com.osms.dao.SearchByPagesDao;
+import com.osms.dao.UserTypeDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
 import com.osms.entity.ApartmentRoll;
+import com.osms.entity.CClass;
+import com.osms.entity.Major;
 import com.osms.entity.ProfessionalTitleType;
+import com.osms.entity.UserType;
 import com.osms.entity.Users;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
@@ -33,6 +38,8 @@ import com.osms.service.UserService;
 import com.osms.utils.ControllerUtil;
 import com.osms.utils.JSONUtil;
 import com.osms.utils.Utils;
+
+import net.sf.json.JSONObject;
 
 @Component
 public class TeacherMgrAction extends HttpServlet {
@@ -47,6 +54,9 @@ public class TeacherMgrAction extends HttpServlet {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserTypeDao userTypeDao;
 	
 	@Autowired
 	SearchByPagesDao searchByPagesDao;
@@ -99,20 +109,28 @@ public class TeacherMgrAction extends HttpServlet {
 	 */
 	private void updateTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String jsonString=request.getParameter("teacher").trim();
-		System.out.println(jsonString);
-		Users teacher=(Users) JSONUtil.jsonToBean(jsonString, Users.class);
+		String jsonTeacher=request.getParameter("teacher").trim();
+		String jsonAmcOnUsers=request.getParameter("amcOnUsers").trim();
+		Users teacher=(Users) JSONUtil.jsonToBean(jsonTeacher, Users.class);
+		List<AMCOnUser> amcOnUsers=JSONUtil.jsonToList(jsonAmcOnUsers, AMCOnUser.class);
+
+		System.out.println(amcOnUsers);
+		teacher.setAmcOnUsers(amcOnUsers);
+		System.out.println(teacher);
+		Users user=userService.getUser(teacher.getUserId(), Constants.TEACHER);
+		int status=checkInfo(request, response, teacher, user);
 		
-		int status=checkInfo(request, response, teacher);
 		if(status!=0)
 		{
 			return;
 		}else
 		{
-//			userService.saveTeacher(teacher);
-//			return;
+			System.out.println("ok");
 			userService.updateTeacher(teacher);
-			ControllerUtil.out(response, "sucess");
+			JSONObject json=new JSONObject();
+			json.element("success", true);
+			response.setCharacterEncoding("UTF-8");
+			ControllerUtil.out(response, json);
 		}	
 	}
 
@@ -135,6 +153,7 @@ public class TeacherMgrAction extends HttpServlet {
 		{
 			int userId=Integer.parseInt(id);
 			Users teacher=userService.getUser(userId, Constants.TEACHER);
+			response.setCharacterEncoding("UTF-8");
 			ControllerUtil.out(response, teacher);
 			return;
 		}
@@ -164,6 +183,17 @@ public class TeacherMgrAction extends HttpServlet {
 		getSearchPage(request, limit, count, searchForm);
 		//get user by amcOnUser
 		List<Users> users=searchByPagesDao.getUsersByAMCOnUsers(parma, limit, searchForm.getPage(), count);
+		
+		Map<Integer, Users> userMaps=new HashMap<>();
+		for(Users user:users)
+		{
+			userMaps.put(user.getUserId(), user);
+		}
+		users.clear();
+		for(Entry<Integer, Users> entry:userMaps.entrySet())
+		{
+			users.add(entry.getValue());
+		}
 		//clear status==-1, if exits
 		checkAndClearInfoForStatus(users);
 		//match roll informations
@@ -172,6 +202,31 @@ public class TeacherMgrAction extends HttpServlet {
 			ApartmentRoll apartmentRoll=apartmentRollService.getApartmentRollByUserId(u.getUserId());
 			u.setApartmentRoll(apartmentRoll);
 			List<AMCOnUser> amcOnUsers=amcService.getAMCByUserId(u.getUserId());
+			UserType userType=userTypeDao.getUserTypeByUserTypeId(u.getUserTypeId());
+			u.setUserType(userType);
+			if(amcOnUsers.size()>1)
+			{
+				int aid=0,mid=0;
+				for(AMCOnUser amcOnUser:amcOnUsers)
+				{
+					if(aid!=0&&aid==amcOnUser.getAcademy().getAcademyId())
+					{
+						aid=amcOnUser.getAcademy().getAcademyId();
+						amcOnUser.setAcademy(null);
+					}else
+					{
+						aid=amcOnUser.getAcademy().getAcademyId();
+					}
+					if(mid!=0&&mid==amcOnUser.getMajor().getMajorId())
+					{
+						mid=amcOnUser.getMajor().getMajorId();
+						amcOnUser.setMajor(null);
+					}else
+					{
+						mid=amcOnUser.getMajor().getMajorId();
+					}
+				}
+			}
 			u.setAmcOnUsers(amcOnUsers);
 			System.out.println(u);
 		}
@@ -305,7 +360,7 @@ public class TeacherMgrAction extends HttpServlet {
 		//user
 		Users user=new Users();
 		getParmas(request, response, user);
-		int status=checkInfo(request, response, user);
+		int status=checkAddInfo(request, response, user);
 		if(status==0)
 		{
 			System.out.println(user);
@@ -320,7 +375,7 @@ public class TeacherMgrAction extends HttpServlet {
 		
 	}
 
-	private int checkInfo(HttpServletRequest request, HttpServletResponse response, Users user) throws ServletException, IOException {
+	private int checkAddInfo(HttpServletRequest request, HttpServletResponse response, Users user) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String ERROR="";
 		int status=0;
@@ -338,7 +393,9 @@ public class TeacherMgrAction extends HttpServlet {
 				request.getSession().setAttribute(Constants.ERROR, ERROR);
 			}
 		}
+		
 		status=userService.checkCard(user.getApartmentRoll().getCardNumber());
+		
 		if(status!=0)
 		{
 			if(status==1)
@@ -348,6 +405,7 @@ public class TeacherMgrAction extends HttpServlet {
 			}
 		}
 		status=userService.checkPhone(user.getPhone());
+		
 		if(status!=0)
 		{
 			if(status==1)
@@ -364,6 +422,72 @@ public class TeacherMgrAction extends HttpServlet {
 		if(status!=0)
 		{
 			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+		}
+		return status;
+	}
+
+	private int checkInfo(HttpServletRequest request, HttpServletResponse response, Users teacher, Users user) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String ERROR="";
+		int status=0;
+		if(!teacher.getEmail().equals(user.getEmail()))
+		{
+			status=userService.checkEmail(teacher.getEmail());
+		}
+		
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="邮箱格式不正确";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+			if(status==-1)
+			{
+				ERROR="邮箱已被注册";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		
+		if(!teacher.getApartmentRoll().getCardNumber().equals(user.getApartmentRoll().getCardNumber()))
+		{
+			status=userService.checkCard(teacher.getApartmentRoll().getCardNumber());
+		}
+		
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="卡号长度应为11位";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		if(!teacher.getPhone().equals(user.getPhone()))
+		{
+			status=userService.checkPhone(teacher.getPhone());
+		}
+		
+		if(status!=0)
+		{
+			if(status==1)
+			{
+				ERROR="手机号码格式不正确";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+			if(status==-1)
+			{
+				ERROR="该手机号已被注册";
+				request.getSession().setAttribute(Constants.ERROR, ERROR);
+			}
+		}
+		if(status!=0)
+		{
+//			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
+			JSONObject json=new JSONObject();
+			json.element("success", false);
+			json.element("msg", ERROR);
+			response.setCharacterEncoding("UTF-8");
+			ControllerUtil.out(response, json);
 		}
 		return status;
 	}

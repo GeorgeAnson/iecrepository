@@ -21,7 +21,7 @@
 						<h4>
 							<i class="icon-exclamation-sign"></i>&emsp;Warning.
 						</h4>
-						&emsp;&emsp; Your visa will expire soon. <b>41</b> days.
+						&emsp;&emsp; Your visa will expire soon. <b>${visaOnUser.visa.visaDueDate}</b> days.
 					</div>
 				</div>
 			</div>

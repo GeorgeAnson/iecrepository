@@ -31,17 +31,17 @@ $(".foreignInfo").click(function(){
 	  // {"country":"china","birthPlace":"Ningbo","address":"zj nb yz hx lgqhy20h","overseasPhone":"13245678911","acad":"primary","marital":"yes","brithday":"1997-01-25"}
 	  $.ajax({
 	    type: "POST",
-	    url: "./studentMgr.html?type=findIdentity&id="+id,
+	    url: "./studentMgr.html",
 	    data: {
-	      id : id
+	    	'type':'findIdentity',
+	    	'id' : id
 	    },
-	    dataType: "json",
 	    success: function(data){
 	      $("#country").html(data.nationality.cName);
 	      $("#birthPlace").html(data.birthplace);
 	      $("#address").html(data.homeAddress);
 	      $("#overseasPhone").html(data.phone);
-	      $("#acad").html(data.educationOnUser.educationType.cName);
+	      //$("#acad").html(data.educationOnUser.educationType.cName);
 	      $("#marital").html(data.isMarried === 2 ? "未婚" : "已婚");
 	      $("#birthday").html(data.birthday);
 	      var index = layer.open({

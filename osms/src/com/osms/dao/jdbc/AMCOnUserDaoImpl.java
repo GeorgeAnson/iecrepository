@@ -304,7 +304,7 @@ public class AMCOnUserDaoImpl extends JDBCBase implements AMCOnUserDao {
 		PreparedStatement ps=null;
 		ResultSet rs=null;
 		List<Integer> userIds=new ArrayList<Integer>();
-		String sql="SELECT DISTINCT amcOnUserUser FROM AMCOnUser WHERE amcOnUserStatus=1 AND amcOnUserUser IS NOT NULL"
+		String sql="SELECT DISTINCT amcOnUserUser FROM AMCOnUser,Users WHERE userId=amcOnUserUser and userType=4 and amcOnUserStatus=1 AND amcOnUserUser IS NOT NULL"
 				+ " AND academy="+academyId+" AND major="+majorId+" AND cclass="+cclassId;
 		try {
 			ps=conn.prepareStatement(sql);

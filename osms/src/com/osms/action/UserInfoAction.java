@@ -21,6 +21,7 @@ import com.osms.dao.GuaranteeDao;
 import com.osms.dao.NationalityDao;
 import com.osms.dao.RollStatusTypeDao;
 import com.osms.dao.StudentTypeDao;
+import com.osms.dao.UserDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
 import com.osms.entity.CClass;
@@ -58,6 +59,9 @@ public class UserInfoAction extends HttpServlet {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserDao userDao;
 	
 	@Autowired
 	NationalityDao nationalityDao;
@@ -116,26 +120,31 @@ public class UserInfoAction extends HttpServlet {
 		Map<String, String> parmas=new HashMap<String, String>();
 		List<byte[]> images=Utils.analysisForm(request, parmas);
 		List<String> filenames=null;
+		System.out.println("first: "+filenames);
 		if(images!=null)
 		{
 			//save picture
 			String parentPath=request.getSession().getServletContext().getRealPath("\\Passports");
 			filenames=Utils.savePic(images, parentPath);
+			System.out.println(filenames);
 		}
 		Users user=new Users();
-		//String jsonString =request.getParameter("user").trim();
-		//user=(Users) JSONUtil.jsonToBean(jsonString, user.getClass());
+		for(Entry<String, String> entry:parmas.entrySet())
+		{
+			if(entry.getKey().equals("userId"))
+			{
+				user.setUserId(Integer.parseInt(entry.getValue()));
+			}
+		}
+		user=userService.getUser(user.getUserId(), Constants.STUDENT);
 		//match form's parmas
 		matchParmas(parmas, user, filenames);
-		
-		System.out.println(user);
-		
 		//save a student
 		userService.updateStudent(user);
-		
 		//request
-		request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+		response.sendRedirect(request.getContextPath()+"/studentInfo.html?type=init&id="+user.getUserId());
 	}
+
 
 	private void initUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -175,6 +184,7 @@ public class UserInfoAction extends HttpServlet {
 		jsonArray.add(studentTypes);
 		jsonArray.add(guarantees);
 		System.out.println(jsonArray);
+		response.setCharacterEncoding("UTF-8");
 		ControllerUtil.out(response, jsonArray.toArray());
 	}
 
@@ -206,205 +216,148 @@ public class UserInfoAction extends HttpServlet {
 	
 	private void matchParmas(Map<String, String> parmas, Users user, List<String> filenames) {
 		// TODO Auto-generated method stub
-		List<FundingOnUser> fundingOnUsers=new ArrayList<FundingOnUser>();
-		EducationOnUser educationOnUser=new EducationOnUser();
-		
-		educationOnUser.setStatus(1);
-		user.setStatus(1);
-		IdentityOnUser identityOnUser=new IdentityOnUser();
-		identityOnUser.setStatus(1);
-		Visa visa=new Visa();
-		visa.setStatus(1);
-		AMCOnUser amcOnUser=new AMCOnUser();
-		amcOnUser.setStatus(1);
-		StudyPeriod studyPeriod=new StudyPeriod();
-		studyPeriod.setStatus(1);
-		SchoolRoll schoolRoll=new SchoolRoll();
-		schoolRoll.setStatus(1);
-		Passport passport=new Passport();
-		passport.setStatus(1);
 		List<PassportOnUser> passportOnUsers=new ArrayList<PassportOnUser>();
-		//if all those is null
-		if(filenames==null)
-		{
-			passportOnUsers.add(new PassportOnUser(0, 0, 0, null, 1, null, null));
-		}
-	    
+		//if all those is null	    
 		for(String filename:filenames)
 		{
-			passportOnUsers.add(new PassportOnUser(0, 0, 0, filename, 1, null, null));
+			passportOnUsers.add(new PassportOnUser(0, user.getUserId(), user.getPassportOnUsers().get(0).getPassportId(), filename, 1, null, null));
 		}
 		for(Entry<String, String> entry:parmas.entrySet())
 		{
-			if(entry.getKey().equals("fullName"))
+			if(entry.getKey().equals("fullName")&&entry.getValue()!=null&&!entry.getValue().equals(user.getFullName()))
 			{
 				user.setFullName(entry.getValue());
 			}
-			if(entry.getKey().equals("email"))
+			if(entry.getKey().equals("email")&&entry.getValue()!=null&&!entry.getValue().equals(user.getEmail()))
 			{
 				user.setEmail(entry.getValue());
 			}
-			if(entry.getKey().equals("gender"))
+			if(entry.getKey().equals("gender")&&entry.getValue()!=null&&!entry.getValue().equals(user.getGender()))
 			{
 				user.setGender(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("adjectivePhone"))
+			if(entry.getKey().equals("adjectivePhone")&&entry.getValue()!=null&&!entry.getValue().equals(user.getPhone()))
 			{
 				user.setPhone(entry.getValue());
 			}
-			if(entry.getKey().equals("studentType"))
+			if(entry.getKey().equals("studentType")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getStudentTypeId()))////////////////
 			{
-				schoolRoll.setStudentTypeId(Integer.parseInt(entry.getValue()));
+				user.getSchoolRoll().setStudentTypeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("isOversea"))
+			
+			if(entry.getKey().equals("educationTypeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getEducationOnUser().getEducationTypeId()))
 			{
-				educationOnUser.setIsOversea(Integer.parseInt(entry.getValue()));
+				user.getEducationOnUser().setEducationTypeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("educationTypeId"))
+			if(entry.getKey().equals("nationalityId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getNationalityId()))
 			{
-				educationOnUser.setEducationTypeId(Integer.parseInt(entry.getValue()));
+				user.getIdentityOnUser().setNationalityId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("nationalityId"))
+			if(entry.getKey().equals("birthday")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getBirthday()))
 			{
-				identityOnUser.setNationalityId(Integer.parseInt(entry.getValue()));
+				user.getIdentityOnUser().setBirthday(Utils.stringToDate(entry.getValue()));
 			}
-			if(entry.getKey().equals("birthday"))
+			if(entry.getKey().equals("birthplace")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getBirthplace()))
 			{
-				identityOnUser.setBirthday(Utils.stringToDate(entry.getValue()));
+				user.getIdentityOnUser().setBirthplace(entry.getValue());
 			}
-			if(entry.getKey().equals("birthplace"))
+			if(entry.getKey().equals("homeAddress")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getHomeAddress()))
 			{
-				identityOnUser.setBirthplace(entry.getValue());
+				user.getIdentityOnUser().setHomeAddress(entry.getValue());
 			}
-			if(entry.getKey().equals("homeAddress"))
+			if(entry.getKey().equals("overseasPhone")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getPhone()))
 			{
-				identityOnUser.setHomeAddress(entry.getValue());
+				user.getIdentityOnUser().setPhone(entry.getValue());
 			}
-			if(entry.getKey().equals("overseasPhone"))
+			if(entry.getKey().equals("isMarried")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getIsMarried()))
 			{
-				identityOnUser.setPhone(entry.getValue());
+				user.getIdentityOnUser().setIsMarried(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("isMarried"))
-			{
-				identityOnUser.setIsMarried(Integer.parseInt(entry.getValue()));
-			}
-			if(entry.getKey().equals("registerDeadLine"))
+			if(entry.getKey().equals("registerDeadLine")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getRegisterDeadLine()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					visa.setRegisterDeadLine(Utils.stringToDate(entry.getValue()));
+					user.getVisaOnUser().getVisa().setRegisterDeadLine(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("intermediaryName"))
+			if(entry.getKey().equals("intermediaryName")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getIntermediaryName()))
 			{
-				visa.setIntermediaryName(entry.getValue());
+				user.getVisaOnUser().getVisa().setIntermediaryName(entry.getValue());
 			}
-			if(entry.getKey().equals("intermediaryPhone"))
+			if(entry.getKey().equals("intermediaryPhone")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getIntermediaryPhone()))
 			{
-				visa.setIntermediaryPhone(entry.getValue());
+				user.getVisaOnUser().getVisa().setIntermediaryPhone(entry.getValue());
 			}
-			if(entry.getKey().equals("guaranteeId"))
+			if(entry.getKey().equals("guaranteeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getGuaranteeId()))
 			{
-				visa.setGuaranteeId(Integer.parseInt(entry.getValue()));
+				user.getVisaOnUser().getVisa().setGuaranteeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("visaDueDate"))
+			if(entry.getKey().equals("visaDueDate")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getVisaDueDate()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					visa.setVisaDueDate(Utils.stringToDate(entry.getValue()));
+					user.getVisaOnUser().getVisa().setVisaDueDate(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("academyId"))
+			if(entry.getKey().equals("academyId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getAcademyId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					amcOnUser.setAcademyId(Integer.parseInt(entry.getValue()));
+					user.getAmcOnUsers().get(0).setAcademyId(Integer.parseInt(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("majorId"))
+			if(entry.getKey().equals("majorId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getMajorId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					amcOnUser.setMajorId(Integer.parseInt(entry.getValue()));
+					user.getAmcOnUsers().get(0).setMajorId(Integer.parseInt(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("classId"))
+			if(entry.getKey().equals("classId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getClassId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					amcOnUser.setClassId(Integer.parseInt(entry.getValue()));
+					user.getAmcOnUsers().get(0).setClassId(Integer.parseInt(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("startDate"))
+			if(entry.getKey().equals("startDate")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getStudyPeriod().getStartDate()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					studyPeriod.setStartDate(Utils.stringToDate(entry.getValue()));
-					schoolRoll.setComeDate(studyPeriod.getStartDate());
+					user.getSchoolRoll().getStudyPeriod().setStartDate(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("endDate"))
+			if(entry.getKey().equals("endDate")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getStudyPeriod().getEndDate()))
 			{
 				if(entry.getValue().length()!=0)
 				{
-					studyPeriod.setEndDate(Utils.stringToDate(entry.getValue()));
-					schoolRoll.setLeaveDate(studyPeriod.getEndDate());
+					user.getSchoolRoll().getStudyPeriod().setEndDate(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("rollStatusTypeId"))
+			if(entry.getKey().equals("rollStatusTypeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getRollStatusTypeId()))
 			{
-				schoolRoll.setRollStatusTypeId(Integer.parseInt(entry.getValue()));
+				user.getSchoolRoll().setRollStatusTypeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("cardNumber"))
+			if(entry.getKey().equals("cardNumber")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getCardNumber()))
 			{
-				schoolRoll.setCardNumber(entry.getValue());
+				user.getSchoolRoll().setCardNumber(entry.getValue());
 			}
-			if(entry.getKey().equals("studentNumber"))
+			if(entry.getKey().equals("studentNumber")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getStudentNumber()))
 			{
-				schoolRoll.setStudentNumber(entry.getValue());
+				user.getSchoolRoll().setStudentNumber(entry.getValue());
 			}
-			if(entry.getKey().equals("dormitoryNumber"))
+			if(entry.getKey().equals("dormitoryNumber")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getDormitoryNumber()))
 			{
-				schoolRoll.setDormitoryNumber(entry.getValue());
+				user.getSchoolRoll().setDormitoryNumber(entry.getValue());
 			}
-			if(entry.getKey().equals("studentTypeId"))
+			if(entry.getKey().equals("passportNumber")&&entry.getValue()!=null&&!entry.getValue().equals(user.getPassportOnUsers().get(0).getPassport().getPassportNumber()))
 			{
-				schoolRoll.setStudentTypeId(Integer.parseInt(entry.getValue()));
-			}
-			if(entry.getKey().equals("passportNumber"))
-			{
-				passport.setPassportNumber(entry.getValue());
+				for(PassportOnUser passportOnUser:user.getPassportOnUsers())
+				{
+					passportOnUser.getPassport().setPassportNumber(entry.getValue());
+				}
 			}
 		}
-		
-		VisaOnUser visaOnUser=new VisaOnUser();
-		//get schoolYear and semester
-//		getSchoolYearAndSemester(visaOnUser);
-		visaOnUser.setStatus(1);
-		visaOnUser.setVisa(visa);
-		
-		List<AMCOnUser> amcOnUsers=new ArrayList<AMCOnUser>();
-		amcOnUsers.add(amcOnUser);
-		
-		for(PassportOnUser ps:passportOnUsers)
-		{
-			ps.setPassport(passport);
-		}
-		schoolRoll.setStudyPeriod(studyPeriod);
-		
-		//save object;
-		//save fudningOnUsers
-		user.setFundingOnUsers(fundingOnUsers);
-		//save educationOnUsers
-		user.setEducationOnUser(educationOnUser);
-		//save identityOnUsers
-		user.setIdentityOnUser(identityOnUser);
-		//save visaOnUsers
-		user.setVisaOnUser(visaOnUser);
-		//save amcOnUsers
-		user.setAmcOnUsers(amcOnUsers);
-		//save schoolRolls
-		user.setSchoolRoll(schoolRoll);
 		//save passportOnUsers
 		user.setPassportOnUsers(passportOnUsers);
 	}

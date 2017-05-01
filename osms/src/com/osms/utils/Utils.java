@@ -186,6 +186,7 @@ public class Utils {
 					String name=item.getFieldName().trim();
 					String value=item.getString("utf-8").trim();
 					parmas.put(name, value.trim());
+					System.out.println(name+" : "+value.trim());
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

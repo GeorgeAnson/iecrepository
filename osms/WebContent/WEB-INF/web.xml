@@ -68,7 +68,7 @@
     <filter-class>com.osms.filter.UserFilter</filter-class>
     <init-param>
       <param-name>pass</param-name>
-      <param-value>/;/index.html;/ueditor/index.html;/index.htm;/login.jsp;/logout.html;/pwd.html;/config.html;/addStudent.html;/studentMgr.html;/teacherMgr.html;/bills.html;/visa.html;/studentInfo.html;/pic.html;/notice.html;/controller.jsp;/export.html;.*.json;.*.css;.*.js;.*.png;.*.gif;.*.JPG;.*.jpg;.*.map;.*.swf;.*.eot;.*.svg;.*.ttf;.*.woff;</param-value>
+      <param-value>/;/index.html;/ueditor/index.html;/index.htm;/login.jsp;/logout.html;/pwd.html;/config.html;/addStudent.html;/studentMgr.html;/teacherMgr.html;/bills.html;/visa.html;/studentInfo.html;/notice.html;/controller.jsp;/export.html;.*.json;.*.css;.*.js;.*.png;.*.gif;.*.JPG;.*.jpg;.*.map;.*.swf;.*.eot;.*.svg;.*.ttf;.*.woff;</param-value>
     </init-param>
     <init-param>
       <param-name>error_url</param-name>
@@ -187,13 +187,5 @@
   <servlet-mapping>
     <servlet-name>exportAction</servlet-name>
     <url-pattern>/export.html</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>picAction</servlet-name>
-    <servlet-class>com.osms.proxy.DelegatingServletProxy</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>picAction</servlet-name>
-    <url-pattern>/pic.html</url-pattern>
   </servlet-mapping>
 </web-app>

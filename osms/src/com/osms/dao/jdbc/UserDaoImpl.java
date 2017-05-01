@@ -213,7 +213,7 @@ public class UserDaoImpl extends JDBCBase implements UserDao{
 			paramList.add(user.getEmail());
 		}
 		
-		if(user.getPassword()!=null)
+		if(user.getPassword()!=null&&!"".equals(user.getPassword()))
 		{
 			sql.append(", password=?");
 			paramList.add(user.getPassword());

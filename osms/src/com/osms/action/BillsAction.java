@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -67,11 +68,13 @@ public class BillsAction extends HttpServlet {
 	@Autowired
 	AMCOnUserDao amcOnUserDao;
 
+	Users user=null;
+	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		request.getSession().setAttribute(Constants.ERROR, "");
-		Users user=(Users) request.getSession().getAttribute(Constants.USER);
+		user=(Users) request.getSession().getAttribute(Constants.USER);
 		if(user==null)
 		{
 			response.sendRedirect(request.getContextPath()+"/login.jsp");
@@ -80,24 +83,7 @@ public class BillsAction extends HttpServlet {
 		String type=request.getParameter("type").trim();
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
-			System.out.println(user.getUserTypeId());
-			if(user.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
-			{
-				List<Payment> payments=paymentService.searchByPaymentOnUserId(user.getUserId());
-				
-				for(Payment p:payments)
-				{
-					Users oprUser=userDao.getUserByUserId(p.getPaymentOprUser());
-					p.setOprUser(oprUser);
-					System.out.println(p);
-				}
-				request.getSession().setAttribute("payments", payments);
-				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-				return;
-			}else
-			{
-				initBillsPage(request, response);
-			}
+			initBillsPage(request, response);
 		}
 		
 		if(Constants.ADD.toLowerCase().equals(type.toLowerCase()))
@@ -123,12 +109,31 @@ public class BillsAction extends HttpServlet {
 
 	private void getDetail(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
-		int userId=request.getParameter("id").trim()==null?0:Integer.parseInt(request.getParameter("id").trim());
+		int userId=Integer.parseInt(request.getParameter("id").trim());
+		String schoolYear=request.getParameter("schoolYear").trim();
+		int semester=Integer.parseInt(request.getParameter("semester").trim());
+		System.out.println(schoolYear+" school,semester "+semester);
 		List<Payment> payments=paymentService.getPaymentByUserId(userId);
-		for(Payment payment:payments)
+		int i=0;
+		if(null!=payments&&payments.size()>0)
 		{
-			payment.setUser(userDao.getUserByUserId(payment.getUserId()));
-			payment.setOprUser(userDao.getUserByUserId(payment.getPaymentOprUser()));
+			Iterator it=payments.iterator();
+			while(it.hasNext())
+			{
+				Payment payment=(Payment) it.next();
+				if(!payment.getSchoolYear().equals(schoolYear)|| (payment.getTheSemester()!=semester))
+				{
+					it.remove();
+				}else
+				{
+					payment.setUser(userDao.getUserByUserId(payment.getUserId()));
+					payment.setOprUser(userDao.getUserByUserId(payment.getPaymentOprUser()));
+				}
+			}
+		}
+		for(Payment p:payments)
+		{
+			System.out.println("detail : "+p);
 		}
 		response.setCharacterEncoding("UTF-8");
 		ControllerUtil.out(response, payments);
@@ -142,13 +147,8 @@ public class BillsAction extends HttpServlet {
 		paymentTypes=paymentTypeDao.getAllPaymentType();
 		for(Payment payment:payments)
 		{
-			Users user=userDao.getUserByUserId(payment.getUserId());
-			user.setPassword(null);
-			payment.setUser(user);
-			user=null;
-			user=userDao.getUserByUserId(payment.getPaymentOprUser());
-			user.setPassword(null);
-			payment.setOprUser(user);
+			payment.setPayDate(null);
+			payment.setPaymentOprUser(-1);;
 			payment.setPaymentTypes(paymentTypes);
 		}
 		response.setCharacterEncoding("UTF-8");
@@ -243,42 +243,74 @@ public class BillsAction extends HttpServlet {
 	private void getParma(HttpServletRequest request, HttpServletResponse response,
 			IdentityHashMap<Object, Object> parma, SearchForm searchForm) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String academyId=request.getParameter("academyId").trim();
-		String majorId=request.getParameter("majorId").trim();
-		String cclassId=request.getParameter("cclassId").trim();
-		String schoolYear=request.getParameter("schoolYear").trim();
-		String theSemester=request.getParameter("theSemester").trim();
-		
-		if(schoolYear==null||"".equals(schoolYear)
-				||theSemester==null||"".equals(theSemester))
+		if(user.getUserTypeId()!=4)
 		{
-			request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
-		}
-		parma.put("userType", Constants.STUDENT);
-		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
+			String academyId=request.getParameter("academyId").trim();
+			String majorId=request.getParameter("majorId").trim();
+			String cclassId=request.getParameter("cclassId").trim();
+			String schoolYear=request.getParameter("schoolYear").trim();
+			String theSemester=request.getParameter("theSemester").trim();
+			
+			if(schoolYear==null||"".equals(schoolYear)
+					||theSemester==null||"".equals(theSemester))
+			{
+				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}
+			parma.put("userType", Constants.STUDENT);
+			if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
+			{
+				parma.put("academy", Integer.parseInt(academyId));
+				searchForm.setAcademyId(Integer.parseInt(academyId));
+			}
+			if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
+			{
+				parma.put("major", Integer.parseInt(majorId));
+				searchForm.setMajorId(Integer.parseInt(majorId));
+			}
+			if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
+			{
+				parma.put("cclass", Integer.parseInt(cclassId));
+				searchForm.setCclassId(Integer.parseInt(cclassId));
+			}
+			if(schoolYear!=null&&!"".equals(schoolYear))
+			{
+				searchForm.setSchoolYear(schoolYear);
+			}
+			if(theSemester!=null&&!"".equals(theSemester))
+			{
+				searchForm.setThsSemester(Integer.parseInt(theSemester));
+			}
+		}else
 		{
-			parma.put("academy", Integer.parseInt(academyId));
-			searchForm.setAcademyId(Integer.parseInt(academyId));
-		}
-		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
-		{
-			parma.put("major", Integer.parseInt(majorId));
-			searchForm.setMajorId(Integer.parseInt(majorId));
-		}
-		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
-		{
-			parma.put("cclass", Integer.parseInt(cclassId));
-			searchForm.setCclassId(Integer.parseInt(cclassId));
-		}
-		if(schoolYear!=null&&!"".equals(schoolYear))
-		{
-			searchForm.setSchoolYear(schoolYear);
-		}
-		if(theSemester!=null&&!"".equals(theSemester))
-		{
-			searchForm.setThsSemester(Integer.parseInt(theSemester));
+			String schoolYear=request.getParameter("schoolYear").trim();
+			String theSemester=request.getParameter("theSemester").trim();
+			
+			if(schoolYear==null||"".equals(schoolYear)
+					||theSemester==null||"".equals(theSemester))
+			{
+				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}
+			parma.put("userType", Constants.STUDENT);
+			
+			AMCOnUser amcOnUser=amcOnUserDao.getAMCOnUserByUserId(user.getUserId()).get(0);
+			parma.put("academy", amcOnUser.getAcademyId());
+			searchForm.setAcademyId(amcOnUser.getAcademyId());
+			parma.put("major", amcOnUser.getMajorId());
+			searchForm.setMajorId(amcOnUser.getMajorId());
+			parma.put("cclass", amcOnUser.getClassId());
+			searchForm.setCclassId(amcOnUser.getClassId());
+			if(schoolYear!=null&&!"".equals(schoolYear))
+			{
+				searchForm.setSchoolYear(schoolYear);
+			}
+			if(theSemester!=null&&!"".equals(theSemester))
+			{
+				searchForm.setThsSemester(Integer.parseInt(theSemester));
+			}
 		}
 	}
 
@@ -293,22 +325,22 @@ public class BillsAction extends HttpServlet {
 	private void addBills(HttpServletRequest request, HttpServletResponse response, int oprUserId) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String op=request.getParameter("op").trim();
-		String totalNeeds=request.getParameter("totalNeeds").trim();
-		String money=request.getParameter("money").trim();
-		String schoolYear=request.getParameter("schoolYear").trim();
-		String theSemester=request.getParameter("theSemester").trim();
-		String describle=request.getParameter("describe").trim();
 		
 		if(op.toLowerCase().equals("addbills".toLowerCase()))
 		{
+			String schoolYear=request.getParameter("schoolYear").trim();
+			String theSemester=request.getParameter("theSemester").trim();
+			String describle=request.getParameter("describe").trim();
+			
 			String academyId=request.getParameter("academyId").trim();
 			System.out.println(academyId+"  academyId");
 			String majorId=request.getParameter("majorId").trim();
 			String cclassId=request.getParameter("cclassId").trim();
 			//get parmas
 			String paymentTypeIds=request.getParameter("paymentTypeIds").trim();
+			System.out.println(paymentTypeIds);
 			//check
-			int status=check(request, response, academyId, majorId, cclassId, paymentTypeIds, totalNeeds, money, theSemester);
+			int status=check(request, response, academyId, majorId, cclassId, paymentTypeIds, theSemester);
 			if(status!=0)
 			{
 				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
@@ -319,7 +351,7 @@ public class BillsAction extends HttpServlet {
 				List<Integer> userIds=amcOnUserDao.getuserIdsByamc(Integer.parseInt(academyId), Integer.parseInt(majorId), Integer.parseInt(cclassId));
 				System.out.println(userIds+" ,payids "+paymentTypeIds);
 				//get results
-				List<Payment> payments=matchParmas(userIds, paymentTypeIds, totalNeeds, money, majorId, schoolYear, theSemester, describle, oprUserId);
+				List<Payment> payments=matchParmas(userIds, paymentTypeIds, majorId, schoolYear, theSemester, describle, oprUserId);
 				System.out.println(payments);
 				//save
 				paymentService.save(payments);
@@ -334,56 +366,12 @@ public class BillsAction extends HttpServlet {
 			payment.setPaymentOprUser(oprUserId);
 			payment.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
 			payment.setStatus(1);
+			System.out.println("Paymeent: "+payment);
 			paymentDao.save(payment);
 			JSONObject json=new JSONObject();
 			json.element("success", true);
 			response.setCharacterEncoding("UTF-8");
 			ControllerUtil.out(response, json);
-//			//getParmas(request, response);
-//			String condition=request.getParameter("condition").trim();
-//			String paymentTypeId=request.getParameter("paymentTypeId").trim();
-//			
-//			if(paymentTypeId==null||"".equals(paymentTypeId))
-//			{
-//				request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
-//				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-//				return;
-//			}
-//			
-//			//judge whether parma is ok
-//			int status=judgeParma(request, response, condition, money, totalNeeds, op);
-//			if(status!=0)
-//			{
-//				return;
-//			}else
-//			{
-//				//get user object
-//				Users user=userDao.getUserByCondition(condition, 1);
-//				if(user==null)
-//				{
-//					request.getSession().setAttribute(Constants.ERROR, "用户不存在，请检查输入手机号/邮箱是否正确");
-//					request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-//					return;
-//				}
-//				//save a payment object
-//				Payment payment=new Payment();
-//				payment.setUserId(user.getUserId());
-//				payment.setPaymentTypeId(Integer.parseInt(paymentTypeId));
-//				payment.setSchoolYear(schoolYear);
-//				payment.setTheSemester(Integer.parseInt(theSemester));
-//				payment.setTotalMoney(Double.parseDouble(totalNeeds));
-//				payment.setMoney(Double.parseDouble(money));
-//				payment.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
-//				payment.setDescrible(describle);
-//				payment.setStatus(1);
-//				payment.setPaymentOprUser(oprUserId);
-//				//save
-//				paymentDao.save(payment);
-//				
-//				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-//				return;
-//			}
-			
 		}
 	}
 
@@ -400,30 +388,28 @@ public class BillsAction extends HttpServlet {
 	 * @param  
 	 * @return
 	 */
-	private List<Payment> matchParmas(List<Integer> userIds, String paymentTypeIds, String totalNeeds, String money, String majorId,
+	private List<Payment> matchParmas(List<Integer> userIds, String paymentTypeIds, String majorId,
 			String schoolYear, String theSemester, String describle, int oprUserId) {
 		// TODO Auto-generated method stub
 		List<Payment> payments=new ArrayList<Payment>();
-		String[] payTypeIds=paymentTypeIds.split(";");
+		String[] str=paymentTypeIds.split(";");
 		for(int userId:userIds)
 		{
-			for (String payTypeId:payTypeIds) 
+			for(String items:str)
 			{
-				if(payTypeId!=null&&!"".equals(payTypeId))
-				{
-					Payment p=new Payment();
-					p.setUserId(userId);
-					p.setPaymentTypeId(Integer.parseInt(payTypeId));
-					p.setSchoolYear(schoolYear);
-					p.setTheSemester(Integer.parseInt(theSemester));
-					p.setTotalMoney(Double.parseDouble(totalNeeds));
-					p.setMoney(Double.parseDouble(money));
-					p.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
-					p.setDescrible(describle);
-					p.setStatus(1);
-					p.setPaymentOprUser(oprUserId);
-					payments.add(p);
-				}
+				String[] matchs=items.split(",");
+				Payment p=new Payment();
+				p.setUserId(userId);
+				p.setPaymentTypeId(Integer.parseInt(matchs[0]));
+				p.setSchoolYear(schoolYear);
+				p.setTheSemester(Integer.parseInt(theSemester));
+				p.setTotalMoney(Double.parseDouble(matchs[1]));
+				p.setMoney(Double.parseDouble(matchs[2]));
+				p.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
+				p.setDescrible(describle);
+				p.setStatus(1);
+				p.setPaymentOprUser(oprUserId);
+				payments.add(p);
 			}
 		}
 		return payments;
@@ -437,17 +423,15 @@ public class BillsAction extends HttpServlet {
 	 * @param majorId
 	 * @param cclassId
 	 * @param paymentTypeIds
+	 * @param theSemester 
 	 * @param totalNeeds
-	 * @param money
 	 * @param schoolYear
-	 * @param theSemester
 	 * @param op 
 	 * @throws IOException 
 	 * @throws ServletException 
 	 */
 	private int check(HttpServletRequest request, HttpServletResponse response, 
-			String academyId, String majorId, String cclassId, String paymentTypeIds, String totalNeeds,
-			String money, String theSemester) throws ServletException, IOException {
+			String academyId, String majorId, String cclassId, String paymentTypeIds, String theSemester) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		int status=0;
 		if(academyId==null||"".equals(academyId)||"0".equals(academyId)
@@ -457,100 +441,45 @@ public class BillsAction extends HttpServlet {
 			request.getSession().setAttribute(Constants.ERROR, "学院、专业、班级均不能留空");
 			status=1;
 		}
-		if(totalNeeds==null||"".equals(totalNeeds)
-				||money==null||"".equals(money))
-		{
-			request.getSession().setAttribute(Constants.ERROR, "金额不能留空");
-			status=1;
-		}
-		if(paymentTypeIds==null||"".equals(paymentTypeIds))
-		{
-			request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
-			status=1;
-		}
 		
-		double needs=Double.parseDouble(totalNeeds);
-		if(needs<0)
+		String[] items=paymentTypeIds.split(";");
+		for(String it:items)
 		{
-			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-			status=1;
+			String[] matchs=it.split(",");
+			if(matchs[0]==null)
+			{
+				request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
+				status=1;
+			}
+			if(matchs[1]==null||matchs[2]==null)
+			{
+				request.getSession().setAttribute(Constants.ERROR, "金额不能留空");
+				status=1;
+			}else
+			{
+				double needs=Double.parseDouble(matchs[1]);
+				if(needs<0)
+				{
+					request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
+					status=1;
+				}
+				
+				double pay=Double.parseDouble(matchs[2]);
+				if(pay<0)
+				{
+					request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
+					status=1;
+				}
+				
+				if(needs<pay)
+				{
+					request.getSession().setAttribute(Constants.ERROR, "应缴金额小于实缴金额");
+					status=1;
+				}
+			}
 		}
-		
-		double pay=Double.parseDouble(money);
-		if(pay<0)
-		{
-			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-			status=1;
-		}
-		
-		if(needs<pay)
-		{
-			request.getSession().setAttribute(Constants.ERROR, "应缴金额小于实缴金额");
-			status=1;
-		}
-	//	status=judgeParma(request, response, theSemester, money, totalNeeds, op);
 		return status;
 	}
-
-	/**
-	 * judge whether parma is ok
-	 * @param request 
-	 * @param response 
-	 * @param condition
-	 * @param paymentTypeIds
-	 * @param money
-	 * @param money2 
-	 * @return 
-	 * @throws IOException 
-	 * @throws ServletException 
-	 */
-//	private int judgeParma(HttpServletRequest request, HttpServletResponse response,
-//			String condition, String money, String totalNeeds, String op)
-//			throws ServletException, IOException {
-//		// TODO Auto-generated method stub
-//		int status=0;
-//		//conditions->semester,conditions to add single
-//		if(condition==null||"".equals(condition)
-//				||money==null||"".equals(money)
-//				||totalNeeds==null||"".equals(totalNeeds))
-//		{
-//			request.getSession().setAttribute(Constants.ERROR, "不能留空");
-//			status=1;
-//		}
-//		
-//		double needs=Double.parseDouble(totalNeeds);
-//		if(needs<0)
-//		{
-//			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-//			status=1;
-//		}
-//		
-//		double pay=Double.parseDouble(money);
-//		if(pay<0)
-//		{
-//			request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-//			status=1;
-//		}
-//		
-//		if(needs<pay)
-//		{
-//			request.getSession().setAttribute(Constants.ERROR, "应缴金额小于实缴金额");
-//			status=1;
-//		}
-//		
-//		if(status!=0)
-//		{
-//			if(op.toLowerCase().equals("addbills".toLowerCase()))
-//			{
-//				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
-//			}else
-//			{
-//				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-//			}
-//		}
-//		
-//		return status;
-//	}
 
 
 	/**

@@ -66,7 +66,7 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 
 	@Override
 	public void save(Payment payment) {
-		String sql="INSERT INTO Payment VALUES(?,?,?,?,?,?,?,?,?)";
+		String sql="INSERT INTO Payment VALUES(?,?,?,?,?,?,?,?,?,?)";
 		Object[] parma={
 			payment.getUserId(),
 			payment.getPaymentTypeId(),
@@ -76,6 +76,7 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 			payment.getMoney(),
 			payment.getPaymentOprUser(),
 			payment.getPayDate(),
+			payment.getDescrible(),
 			payment.getStatus()
 		};
 		saveOrUpdateOrDelete(sql, parma);
@@ -120,10 +121,16 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 			parma.add(payment.getMoney());
 		}
 		
-		if(payment.getPayDate()!=null||!"".equals(payment.getPayDate()))
+		if(payment.getPayDate()!=null&&!"".equals(payment.getPayDate()))
 		{
 			sql.append(", payDate=?");
 			parma.add(payment.getPayDate());
+		}
+		
+		if(payment.getDescrible()!=null&&!"".equals(payment.getDescrible()))
+		{
+			sql.append(", describle=?");
+			parma.add(payment.getDescrible());
 		}
 		
 		if(payment.getOprUser()!=null)

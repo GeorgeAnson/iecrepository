@@ -66,5 +66,8 @@ public interface UserService {
 	 * @param teacher
 	 */
 	public void updateTeacher(Users teacher);
+
+
+	public void updateParmas(Users user, Users old);
 	
 }

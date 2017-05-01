@@ -93,41 +93,32 @@ public class PaymentServiceImpl implements PaymentService {
 	public List<Payment> searchByPaymentOnamc(IdentityHashMap<Object, Object> parma, int limit, int page, int count) {
 		// TODO Auto-generated method stub
 		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(parma, limit, page, count);
+		
 		List<Payment> results=new ArrayList<Payment>();
+		
 		for(Payment p:payments)
 		{
-			//get a userId
-			int userId=p.getUser().getUserId();
-			double totalMoney=0;
-			double totalPaid=0;
-			List<Integer> payTypeIds=new ArrayList<Integer>();
-			payTypeIds.add(0);
-			for(Payment payment:payments)
+			boolean flag=true;
+			for(Payment payment:results)
 			{
-				if(userId==payment.getUser().getUserId())
+				if(payment.getUser().getUserId()==p.getUser().getUserId()
+						&&payment.getPaymentType().getPaymentTypeId()==p.getPaymentType().getPaymentTypeId())
 				{
-					//the same user
-					boolean flag=true;
-					for(int payTypeId:payTypeIds)
-					{
-						//check paymentTypeId
-						if(payTypeId==payment.getPaymentType().getPaymentTypeId())
-						{
-							flag=false;
-						}
-					}
-					//different paymentTypeId
-					if(flag)
-					{
-						totalMoney+=payment.getTotalMoney();
-						payTypeIds.add(payment.getPaymentType().getPaymentTypeId());
-					}
-					totalPaid+=payment.getMoney();
+					payment.setMoney(payment.getMoney()+p.getMoney());
+					flag=false;
+				}else if(payment.getUser().getUserId()==p.getUser().getUserId()
+						&&payment.getPaymentType().getPaymentTypeId()!=p.getPaymentType().getPaymentTypeId())
+				{
+					payment.setTotalMoney(payment.getTotalMoney()+p.getTotalMoney());
+					payment.setMoney(payment.getMoney()+p.getMoney());
+					payment.setDescrible(payment.getDescrible()+";"+p.getDescrible());
+					flag=false;
 				}
 			}
-			p.setTotalMoney(totalMoney);
-			p.setMoney(totalPaid);
-			results.add(p);
+			if(flag)
+			{
+				results.add(p);
+			}
 		}
 		return results;
 	}
@@ -135,43 +126,71 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public List<Payment> searchByPaymentOnUserId(int userId) {
 		// TODO Auto-generated method stub
-		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(userId);
+		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(userId);		
 		List<Payment> results=new ArrayList<Payment>();
 		for(Payment p:payments)
 		{
-			//get a userId
-			int user=p.getUser().getUserId();
-			double totalMoney=0;
-			double totalPaid=0;
-			List<Integer> payTypeIds=new ArrayList<Integer>();
-			payTypeIds.add(0);
-			for(Payment payment:payments)
+			boolean flag=true;
+			for(Payment payment:results)
 			{
-				if(user==payment.getUser().getUserId())
+				if(payment.getUser().getUserId()==p.getUser().getUserId()
+						&&payment.getPaymentType().getPaymentTypeId()==p.getPaymentType().getPaymentTypeId())
 				{
-					//the same user
-					boolean flag=true;
-					for(int payTypeId:payTypeIds)
-					{
-						//check paymentTypeId
-						if(payTypeId==payment.getPaymentType().getPaymentTypeId())
-						{
-							flag=false;
-						}
-					}
-					//different paymentTypeId
-					if(flag)
-					{
-						totalMoney+=payment.getTotalMoney();
-						payTypeIds.add(payment.getPaymentType().getPaymentTypeId());
-					}
-					totalPaid+=payment.getMoney();
+					payment.setMoney(payment.getMoney()+p.getMoney());
+					flag=false;
+				}else if(payment.getUser().getUserId()==p.getUser().getUserId()
+						&&payment.getPaymentType().getPaymentTypeId()!=p.getPaymentType().getPaymentTypeId())
+				{
+					payment.setTotalMoney(payment.getTotalMoney()+p.getTotalMoney());
+					payment.setMoney(payment.getMoney()+p.getMoney());
+					payment.setDescrible(payment.getDescrible()+";"+p.getDescrible());
+					flag=false;
 				}
 			}
-			p.setTotalMoney(totalMoney);
-			p.setMoney(totalPaid);
-			results.add(p);
+			if(flag)
+			{
+				results.add(p);
+			}
 		}
+		
+		
+		
+//		List<Payment> results=new ArrayList<Payment>();
+//		for(Payment p:payments)
+//		{
+//			//get a userId
+//			int user=p.getUser().getUserId();
+//			double totalMoney=0;
+//			double totalPaid=0;
+//			List<Integer> payTypeIds=new ArrayList<Integer>();
+//			payTypeIds.add(0);
+//			for(Payment payment:payments)
+//			{
+//				if(user==payment.getUser().getUserId())
+//				{
+//					//the same user
+//					boolean flag=true;
+//					for(int payTypeId:payTypeIds)
+//					{
+//						//check paymentTypeId
+//						if(payTypeId==payment.getPaymentType().getPaymentTypeId())
+//						{
+//							flag=false;
+//						}
+//					}
+//					//different paymentTypeId
+//					if(flag)
+//					{
+//						totalMoney+=payment.getTotalMoney();
+//						payTypeIds.add(payment.getPaymentType().getPaymentTypeId());
+//					}
+//					totalPaid+=payment.getMoney();
+//				}
+//			}
+//			p.setTotalMoney(totalMoney);
+//			p.setMoney(totalPaid);
+//			results.add(p);
+//		}
 		return results;
 	}
 

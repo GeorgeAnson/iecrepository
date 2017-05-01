@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.osms.bean.AcademyMajorBean;
+import com.osms.bean.IdentityForm;
 import com.osms.bean.SearchForm;
 import com.osms.dao.SearchByPagesDao;
 import com.osms.entity.AMCOnUser;
@@ -82,7 +83,16 @@ public class StudentMgrAction extends HttpServlet {
 			String id=request.getParameter("id").trim();
 			IdentityOnUser identityOnUser=identityOnUserService.getIdentityOnUserByUserId(Integer.parseInt(id));
 			System.out.println(identityOnUser);
-			ControllerUtil.out(response, identityOnUser);
+			IdentityForm identityForm=new IdentityForm();
+			identityForm.setBirthday(identityOnUser.getBirthday().toString());
+			identityForm.setBirthPlace(identityOnUser.getBirthplace());
+			identityForm.setHomeAddress(identityOnUser.getHomeAddress());
+			identityForm.setMarry(identityOnUser.getIsMarried()==2?"Î´»é":"ÒÑ»é");
+			identityForm.setNational(identityOnUser.getNationality().getcName());
+			identityForm.setPhone(identityOnUser.getPhone());
+			identityOnUser=null;
+			response.setCharacterEncoding("UTF-8");
+			ControllerUtil.out(response, identityForm);
 		}
 	}
 	

@@ -21,7 +21,8 @@
 						<h4>
 							<i class="icon-exclamation-sign"></i>&emsp;Warning.
 						</h4>
-						&emsp;&emsp; Your visa will expire soon. <b>${visaOnUser.visa.visaDueDate}</b> days.
+						
+						&emsp;&emsp; Your visa will expire soon. <b><span id="timeLine"></span></b> days. (<span id="timelinedate">${visaOnUser.visa.visaDueDate}</span>)
 					</div>
 				</div>
 			</div>
@@ -153,9 +154,43 @@
 		</c:otherwise>
 	</c:choose>
 	 <script>
-      $("#visaAlert").click(function(){
-        layer.msg("<b>41days</b>");
-      });
+      
+      var dater = $('#timelinedate').html();
+      $('#timeLine').html(getDays(getNowFormatDate(), dater));
+  
+      function getDays(strDateStart,strDateEnd){
+          var strSeparator = "-"; 
+          var oDate1;
+          var oDate2;
+          var iDays;
+          oDate1= strDateStart.split(strSeparator);
+          oDate2= strDateEnd.split(strSeparator);
+          var strDateS = new Date(oDate1[0], oDate1[1]-1, oDate1[2]);
+          var strDateE = new Date(oDate2[0], oDate2[1]-1, oDate2[2]);
+          iDays = parseInt(Math.abs(strDateS - strDateE ) / 1000 / 60 / 60 /24)//把相差的毫秒数转换为天数
+          return iDays ;
+       }
+       function getNowFormatDate() {
+           var date = new Date();
+           var seperator1 = "-";
+           var seperator2 = ":";
+           var month = date.getMonth() + 1;
+           var strDate = date.getDate();
+           if (month >= 1 && month <= 9) {
+               month = "0" + month;
+           }
+           if (strDate >= 0 && strDate <= 9) {
+               strDate = "0" + strDate;
+           }
+           var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;
+           return currentdate;
+       }
     </script>
+    <script type="text/javascript">
+
+
+
+     document.getElementById("dayer").innerHTML = getDays("2016-12-13",getNowFormatDate());
+</script>
 </body>
 </html>

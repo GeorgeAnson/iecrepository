@@ -335,9 +335,15 @@ public class UserServiceImpl implements UserService{
 			{
 				educationOnUserDao.upadte(user.getEducationOnUser(), conn);
 			}
-			if(user.getAmcOnUser()!=null)
+			if(user.getAmcOnUsers()!=null)
 			{
-				amcOnUserDao.update(user.getAmcOnUser(), conn);
+				for(AMCOnUser amcOnUser:user.getAmcOnUsers())
+				{
+					if(amcOnUser!=null)
+					{
+						amcOnUserDao.update(amcOnUser, conn);
+					}
+				}
 			}
 			//transaction commit
 			conn.commit();
@@ -438,5 +444,27 @@ public class UserServiceImpl implements UserService{
 		{
 			JDBCUtil.close(conn);
 		}
+	}
+
+	@Override
+	public void updateParmas(Users user, Users old) {
+		// TODO Auto-generated method stub
+		if(!user.getFullName().equals(old.getFullName())&&user.getFullName()!=null)
+		{
+			old.setFullName(user.getFullName());
+		}
+		if(!user.getSchoolRoll().getStudentNumber().equals(old.getSchoolRoll().getStudentNumber())&&user.getSchoolRoll()!=null&&user.getSchoolRoll().getStudentNumber()!=null)
+		{
+			old.getSchoolRoll().setStudentNumber(user.getSchoolRoll().getStudentNumber());
+		}
+		if(!user.getEmail().equals(old.getEmail())&&user.getEmail()!=null)
+		{
+			old.setEmail(user.getEmail());
+		}
+		if(user.getGender()!=old.getGender()&&user.getGender()!=0)
+		{
+			old.setGender(user.getGender());
+		}
+		
 	}
 }

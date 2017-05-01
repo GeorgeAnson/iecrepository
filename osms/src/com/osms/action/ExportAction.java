@@ -153,10 +153,11 @@ public class ExportAction extends HttpServlet{
 		OutputStream out=null;
 		try
 		{
+			response.setCharacterEncoding("UTF-8");
 			out=response.getOutputStream();
 			execlUtil.setResponseHeader(response, "留学生信息表".getBytes("UTF-8"));
-			String[] headers={"姓名","性别","用户类型","国内手机号","国外手机号","邮箱","账号创建时间","账号状态","宿舍号","学号","学生卡号","出生日期","出生地点","家庭住址","国籍"};
-			String[] columns={"fullName","gender","userTypeId","gphone","wphone","email","registerDate","status","dormitoryNumber","scradNumber","studentNumber","birthday","birthdayplace","homeAddress","nationality"};
+			String[] headers={"姓名","性别","国内手机号","国外手机号","邮箱","宿舍号","学号","学生卡号","出生日期","出生地点","家庭住址","国籍","用户类型","账号状态"};
+			String[] columns={"fullName","gender","gphone","wphone","email","dormitoryNumber","scradNumber","studentNumber","birthday","birthdayplace","homeAddress","nationality","userTypeId","status"};
 			List<Export> exports=new ArrayList<>();
 			String academyId=request.getParameter("academyId").trim();
 			String majorId=request.getParameter("majorId").trim();

@@ -43,6 +43,10 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		{
 			max=count;
 		}
+		if(max<10)
+		{
+			max=10;
+		}
 		Connection conn=JDBCUtil.getConnection();
 		PreparedStatement ps=null;
 		ResultSet rs=null;
@@ -80,6 +84,10 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		if(max>count)
 		{
 			max=count;
+		}
+		if(max<10)
+		{
+			max=10;
 		}
 		Connection conn=JDBCUtil.getConnection();
 		PreparedStatement ps=null;
@@ -185,6 +193,10 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		{
 			max=count;
 		}
+		if(max<10)
+		{
+			max=10;
+		}
 		Connection conn=JDBCUtil.getConnection();
 		PreparedStatement ps=null;
 		ResultSet rs=null;
@@ -200,6 +212,7 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 				+ " WHERE userStatus=1 AND paymentStatus=1 AND paymentTypeStatus=1"
 				+ " AND userId=amcOnUserUser AND userId=paymentUser AND paymentTypeId=paymentType ");
 		sql.append(psql);
+		System.out.println("psql:"+psql);
 		sql.append(") a  WHERE rownumber BETWEEN "+min+" AND "+max);
 		System.out.println(sql.toString());
 		try {

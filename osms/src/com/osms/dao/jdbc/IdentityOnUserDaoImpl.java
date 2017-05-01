@@ -63,6 +63,7 @@ public class IdentityOnUserDaoImpl extends JDBCBase implements IdentityOnUserDao
 		// TODO Auto-generated method stub
 		StringBuilder sql=new StringBuilder("UPDATE IdentityOnUser SET identityOnUserStatus=?");
 		List<Object> parmas=new ArrayList<Object>();
+		parmas.add(identityOnUser.getStatus());
 		if(identityOnUser.getUserId()!=0)
 		{
 			sql.append(", identityOnUserUser=?");

@@ -360,8 +360,8 @@ public class AMCOnUserDaoImpl extends JDBCBase implements AMCOnUserDao {
 		PreparedStatement ps=null;
 		ResultSet rs=null;
 		//StringBuilder sql=new StringBuilder("SELECT amcOnUserId FROM AMCOnUser WHERE amcOnUserUser=? AND academy=? AND major=? AND cclass=? AND amcOnUserStatus=1");
-		StringBuilder sql=new StringBuilder("SELECT amcOnUserUser FROM AMCOnUser WHERE amcOnUserStatus=1 AND amcOnUserUser IS NOT NULL");
-		ArrayList<Object> parma=new ArrayList<Object>();
+		StringBuilder sql=new StringBuilder("SELECT distinct amcOnUserUser FROM AMCOnUser,Users WHERE userId=amcOnUserUser and userType=4 and amcOnUserStatus=1 AND amcOnUserUser IS NOT NULL");
+		ArrayList<Object> parma=new ArrayList<Object>();;
 		List<Integer> userIds=new ArrayList<>();
 		if(amc.getAcademyId()!=0)
 		{

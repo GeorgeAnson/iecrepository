@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import com.osms.bean.AcademyMajorBean;
 import com.osms.bean.SearchForm;
 import com.osms.bean.VisaForm;
+import com.osms.dao.AMCOnUserDao;
 import com.osms.dao.SearchByPagesDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
@@ -53,42 +54,48 @@ public class VisaAction extends HttpServlet {
 	
 	@Autowired
 	PassportOnUserService passportOnUserService;
+	
+	@Autowired
+	AMCOnUserDao amcOnUserDao;
 
+	Users usr=null;
+	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String type=request.getParameter("type").trim();
-		Users usr=(Users) request.getSession().getAttribute(Constants.USER);
+		usr=(Users) request.getSession().getAttribute(Constants.USER);
 		if(usr==null)
 		{
 			response.sendRedirect(request.getContextPath()+"/login.jsp");
 		}
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
-			if(usr.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
-			{
+//			if(usr.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
+//			{
 				//get user by amcOnUser
-				List<Payment> payments=paymentService.searchByPaymentOnUserId(usr.getUserId());
-				List<VisaForm> visas=new ArrayList<VisaForm>();
-				for(Payment p:payments)
-				{
-					VisaForm visaForm=new VisaForm();
-					visaForm.setPayment(p);
-					visaForm.setUser(p.getUser());
-					VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(p.getUser().getUserId());
-					List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(p.getUser().getUserId());
-					visaForm.setVisaOnUser(visaOnUser);
-					visaForm.setPassportOnUsers(passportOnUsers);
-					visas.add(visaForm);
-					System.out.println(visaForm);
-				}
-				request.getSession().setAttribute("visaForms", visas);
-				request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
-				return;
-			}else
-			{
-				initPage(request, response);
-			}
+//				List<Payment> payments=paymentService.searchByPaymentOnUserId(usr.getUserId());
+//				List<VisaForm> visas=new ArrayList<VisaForm>();
+//				for(Payment p:payments)
+//				{
+//					VisaForm visaForm=new VisaForm();
+//					visaForm.setPayment(p);
+//					visaForm.setUser(p.getUser());
+//					VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(p.getUser().getUserId());
+//					List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(p.getUser().getUserId());
+//					visaForm.setVisaOnUser(visaOnUser);
+//					visaForm.setPassportOnUsers(passportOnUsers);
+//					visas.add(visaForm);
+//					System.out.println(visaForm);
+//				}
+//				request.getSession().setAttribute("visaForms", visas);
+//				request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+//				return;
+//			}else
+//			{
+//				initPage(request, response);
+//			}
+			initPage(request, response);
 		}
 		if(Constants.SEARCH.toLowerCase().equals(type.toLowerCase()))
 		{
@@ -216,43 +223,114 @@ public class VisaAction extends HttpServlet {
 	private void getParma(HttpServletRequest request, HttpServletResponse response,
 			IdentityHashMap<Object, Object> parma, SearchForm searchForm) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String academyId=request.getParameter("academyId").trim();
-		String majorId=request.getParameter("majorId").trim();
-		String cclassId=request.getParameter("cclassId").trim();
-		String schoolYear=request.getParameter("schoolYear").trim();
-		String theSemester=request.getParameter("theSemester").trim();
 		
-		if(schoolYear==null||"".equals(schoolYear)
-				||theSemester==null||"".equals(theSemester))
+		if(usr.getUserTypeId()!=4)
 		{
-			request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-			request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
-			return;
-		}
-		parma.put("userType", Constants.STUDENT);
-		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
+			String academyId=request.getParameter("academyId").trim();
+			String majorId=request.getParameter("majorId").trim();
+			String cclassId=request.getParameter("cclassId").trim();
+			String schoolYear=request.getParameter("schoolYear").trim();
+			String theSemester=request.getParameter("theSemester").trim();
+			
+			if(schoolYear==null||"".equals(schoolYear)
+					||theSemester==null||"".equals(theSemester))
+			{
+				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}
+			parma.put("userType", Constants.STUDENT);
+			if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
+			{
+				parma.put("academy", Integer.parseInt(academyId));
+				searchForm.setAcademyId(Integer.parseInt(academyId));
+			}
+			if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
+			{
+				parma.put("major", Integer.parseInt(majorId));
+				searchForm.setMajorId(Integer.parseInt(majorId));
+			}
+			if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
+			{
+				parma.put("cclass", Integer.parseInt(cclassId));
+				searchForm.setCclassId(Integer.parseInt(cclassId));
+			}
+			if(schoolYear!=null&&!"".equals(schoolYear))
+			{
+				searchForm.setSchoolYear(schoolYear);
+			}
+			if(theSemester!=null&&!"".equals(theSemester))
+			{
+				searchForm.setThsSemester(Integer.parseInt(theSemester));
+			}
+		}else
 		{
-			parma.put("academy", Integer.parseInt(academyId));
-			searchForm.setAcademyId(Integer.parseInt(academyId));
+			String schoolYear=request.getParameter("schoolYear").trim();
+			String theSemester=request.getParameter("theSemester").trim();
+			
+			if(schoolYear==null||"".equals(schoolYear)
+					||theSemester==null||"".equals(theSemester))
+			{
+				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}
+			parma.put("userType", Constants.STUDENT);
+			
+			AMCOnUser amcOnUser=amcOnUserDao.getAMCOnUserByUserId(usr.getUserId()).get(0);
+			parma.put("academy", amcOnUser.getAcademyId());
+			searchForm.setAcademyId(amcOnUser.getAcademyId());
+			parma.put("major", amcOnUser.getMajorId());
+			searchForm.setMajorId(amcOnUser.getMajorId());
+			parma.put("cclass", amcOnUser.getClassId());
+			searchForm.setCclassId(amcOnUser.getClassId());
+			if(schoolYear!=null&&!"".equals(schoolYear))
+			{
+				searchForm.setSchoolYear(schoolYear);
+			}
+			if(theSemester!=null&&!"".equals(theSemester))
+			{
+				searchForm.setThsSemester(Integer.parseInt(theSemester));
+			}
 		}
-		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
-		{
-			parma.put("major", Integer.parseInt(majorId));
-			searchForm.setMajorId(Integer.parseInt(majorId));
-		}
-		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
-		{
-			parma.put("cclass", Integer.parseInt(cclassId));
-			searchForm.setCclassId(Integer.parseInt(cclassId));
-		}
-		if(schoolYear!=null&&!"".equals(schoolYear))
-		{
-			searchForm.setSchoolYear(schoolYear);
-		}
-		if(theSemester!=null&&!"".equals(theSemester))
-		{
-			searchForm.setThsSemester(Integer.parseInt(theSemester));
-		}
+		
+//		String academyId=request.getParameter("academyId").trim();
+//		String majorId=request.getParameter("majorId").trim();
+//		String cclassId=request.getParameter("cclassId").trim();
+//		String schoolYear=request.getParameter("schoolYear").trim();
+//		String theSemester=request.getParameter("theSemester").trim();
+//		
+//		if(schoolYear==null||"".equals(schoolYear)
+//				||theSemester==null||"".equals(theSemester))
+//		{
+//			request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
+//			request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+//			return;
+//		}
+//		parma.put("userType", Constants.STUDENT);
+//		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
+//		{
+//			parma.put("academy", Integer.parseInt(academyId));
+//			searchForm.setAcademyId(Integer.parseInt(academyId));
+//		}
+//		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
+//		{
+//			parma.put("major", Integer.parseInt(majorId));
+//			searchForm.setMajorId(Integer.parseInt(majorId));
+//		}
+//		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
+//		{
+//			parma.put("cclass", Integer.parseInt(cclassId));
+//			searchForm.setCclassId(Integer.parseInt(cclassId));
+//		}
+//		if(schoolYear!=null&&!"".equals(schoolYear))
+//		{
+//			searchForm.setSchoolYear(schoolYear);
+//		}
+//		if(theSemester!=null&&!"".equals(theSemester))
+//		{
+//			searchForm.setThsSemester(Integer.parseInt(theSemester));
+//		}
 	}
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

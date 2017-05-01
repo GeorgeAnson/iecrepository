@@ -114,9 +114,9 @@ public class TeacherMgrAction extends HttpServlet {
 		Users teacher=(Users) JSONUtil.jsonToBean(jsonTeacher, Users.class);
 		List<AMCOnUser> amcOnUsers=JSONUtil.jsonToList(jsonAmcOnUsers, AMCOnUser.class);
 
-		System.out.println(amcOnUsers);
+		System.out.println("amcONUsers : "+amcOnUsers);
 		teacher.setAmcOnUsers(amcOnUsers);
-		System.out.println(teacher);
+		System.out.println("teacher : "+teacher);
 		Users user=userService.getUser(teacher.getUserId(), Constants.TEACHER);
 		int status=checkInfo(request, response, teacher, user);
 		

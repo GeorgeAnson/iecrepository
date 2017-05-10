@@ -50,7 +50,7 @@ td, th{
   vertical-align: middle !important;
 }
 
-.stuStatus, .visaInfo, .billInfo, .isAtSchool, .studentInfoEnterFace, .addNewPassport, .update, .addBill, .updateBill, .checkNotice, .foreignInfo{
+.stuStatus, .delete, .visaInfo, .billInfo, .isAtSchool, .studentInfoEnterFace, .addNewPassport, .update, .addBill, .updateBill, .checkNotice, .foreignInfo{
   cursor: pointer !important;
   background: #4b93f2 !important;
   color: #FFF !important;
@@ -60,7 +60,7 @@ td, th{
   -webkit-transition: all 0.3s ease 0s;
 }
 
-.stuStatus:hover, .visaInfo:hover, .billInfo:hover, .isAtSchool:hover, .studentInfoEnterFace:hover, .addNewPassport:hover, .update:hover, .addBill:hover, .updateBill:hover, .checkNotice:hover, .foreignInfo:hover{
+.stuStatus:hover, .delete:hover, .visaInfo:hover, .billInfo:hover, .isAtSchool:hover, .studentInfoEnterFace:hover, .addNewPassport:hover, .update:hover, .addBill:hover, .updateBill:hover, .checkNotice:hover, .foreignInfo:hover{
   background: #1854a4 !important;
 }
 

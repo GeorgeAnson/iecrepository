@@ -193,13 +193,14 @@ public class AddStudentAction extends HttpServlet {
 					ERROR="手机格式不正确";
 				}
 			}
+			//注释，不判断学号或者卡号，可能不存在
 			if(entry.getKey().equals("studentNumber")||entry.getKey().equals("scardNumber"))
 			{
 				System.out.println(entry.getValue()+"   "+entry.getValue().length());
 				status=userService.checkCard(entry.getValue());
 				if(status==1)
 				{
-					ERROR="卡号长度不正确";
+					ERROR="卡号长度为11位";
 				}
 			}
 			if(status!=0)

@@ -18,6 +18,7 @@ import com.osms.bean.AcademyMajorBean;
 import com.osms.bean.IdentityForm;
 import com.osms.bean.SearchForm;
 import com.osms.dao.SearchByPagesDao;
+import com.osms.dao.UserDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
 import com.osms.entity.IdentityOnUser;
@@ -30,6 +31,8 @@ import com.osms.service.IdentityOnUserService;
 import com.osms.service.PassportOnUserService;
 import com.osms.service.SchoolRollService;
 import com.osms.utils.ControllerUtil;
+
+import net.sf.json.JSONObject;
 
 @Component
 public class StudentMgrAction extends HttpServlet {
@@ -53,6 +56,9 @@ public class StudentMgrAction extends HttpServlet {
 	
 	@Autowired
 	IdentityOnUserService identityOnUserService;
+	
+	@Autowired
+	UserDao userDao;
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -94,7 +100,19 @@ public class StudentMgrAction extends HttpServlet {
 			response.setCharacterEncoding("UTF-8");
 			ControllerUtil.out(response, identityForm);
 		}
+		if(Constants.DELETE.toLowerCase().equals(type.toLowerCase()))
+		{
+			String id=request.getParameter("id").trim();
+			Users student=userDao.getUserByUserId(Integer.parseInt(id));
+			student.setStatus(-1);
+			userDao.update(student);
+			JSONObject json=new JSONObject();
+			json.element("success", true);
+			response.setCharacterEncoding("UTF-8");
+			ControllerUtil.out(response, json);
+		}
 	}
+	
 	
 	/**
 	 * instance page

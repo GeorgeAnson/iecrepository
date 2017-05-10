@@ -107,7 +107,7 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		StringBuilder sql=new StringBuilder("SELECT * FROM ( SELECT row_number() over ( order by userId)"
 				+ " rownumber, userId, gender, fullName, userPhone, email, userType"
 				+ " FROM Users, AMCOnUser"
-				+ " WHERE userStatus=1 AND userId=amcOnUserUser ");
+				+ " WHERE amcOnUserStatus=1 AND userStatus=1 AND userId=amcOnUserUser ");
 		sql.append(psql);
 		sql.append(") a  WHERE rownumber BETWEEN "+min+" AND "+max);
 		System.out.println(sql.toString());

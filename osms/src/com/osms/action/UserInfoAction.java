@@ -232,7 +232,7 @@ public class UserInfoAction extends HttpServlet {
 			{
 				user.setEmail(entry.getValue());
 			}
-			if(entry.getKey().equals("gender")&&entry.getValue()!=null&&!entry.getValue().equals(user.getGender()))
+			if(entry.getKey().equals("gender")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getGender()))
 			{
 				user.setGender(Integer.parseInt(entry.getValue()));
 			}
@@ -245,11 +245,11 @@ public class UserInfoAction extends HttpServlet {
 				user.getSchoolRoll().setStudentTypeId(Integer.parseInt(entry.getValue()));
 			}
 			
-			if(entry.getKey().equals("educationTypeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getEducationOnUser().getEducationTypeId()))
+			if(entry.getKey().equals("educationTypeId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getEducationOnUser().getEducationTypeId()))
 			{
 				user.getEducationOnUser().setEducationTypeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("nationalityId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getNationalityId()))
+			if(entry.getKey().equals("nationalityId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getIdentityOnUser().getNationalityId()))
 			{
 				user.getIdentityOnUser().setNationalityId(Integer.parseInt(entry.getValue()));
 			}
@@ -269,7 +269,7 @@ public class UserInfoAction extends HttpServlet {
 			{
 				user.getIdentityOnUser().setPhone(entry.getValue());
 			}
-			if(entry.getKey().equals("isMarried")&&entry.getValue()!=null&&!entry.getValue().equals(user.getIdentityOnUser().getIsMarried()))
+			if(entry.getKey().equals("isMarried")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getIdentityOnUser().getIsMarried()))
 			{
 				user.getIdentityOnUser().setIsMarried(Integer.parseInt(entry.getValue()));
 			}
@@ -288,7 +288,7 @@ public class UserInfoAction extends HttpServlet {
 			{
 				user.getVisaOnUser().getVisa().setIntermediaryPhone(entry.getValue());
 			}
-			if(entry.getKey().equals("guaranteeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getGuaranteeId()))
+			if(entry.getKey().equals("guaranteeId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getGuaranteeId()))
 			{
 				user.getVisaOnUser().getVisa().setGuaranteeId(Integer.parseInt(entry.getValue()));
 			}
@@ -299,21 +299,21 @@ public class UserInfoAction extends HttpServlet {
 					user.getVisaOnUser().getVisa().setVisaDueDate(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("academyId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getAcademyId()))
+			if(entry.getKey().equals("academyId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getAcademyId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
 					user.getAmcOnUsers().get(0).setAcademyId(Integer.parseInt(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("majorId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getMajorId()))
+			if(entry.getKey().equals("majorId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getMajorId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
 					user.getAmcOnUsers().get(0).setMajorId(Integer.parseInt(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("classId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getClassId()))
+			if(entry.getKey().equals("classId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getClassId()))
 			{
 				if(entry.getValue().length()!=0)
 				{
@@ -334,7 +334,7 @@ public class UserInfoAction extends HttpServlet {
 					user.getSchoolRoll().getStudyPeriod().setEndDate(Utils.stringToDate(entry.getValue()));
 				}
 			}
-			if(entry.getKey().equals("rollStatusTypeId")&&entry.getValue()!=null&&!entry.getValue().equals(user.getSchoolRoll().getRollStatusTypeId()))
+			if(entry.getKey().equals("rollStatusTypeId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getSchoolRoll().getRollStatusTypeId()))
 			{
 				user.getSchoolRoll().setRollStatusTypeId(Integer.parseInt(entry.getValue()));
 			}

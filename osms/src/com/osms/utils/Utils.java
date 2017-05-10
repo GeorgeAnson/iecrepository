@@ -49,7 +49,7 @@ public class Utils {
 	 */
 	public static boolean isEmail(String email)
 	{
-		String rule = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+		String rule = "^[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?$";
 		Pattern pattern=Pattern.compile(rule);
 		Matcher matcher=pattern.matcher(email);
 		return matcher.matches();

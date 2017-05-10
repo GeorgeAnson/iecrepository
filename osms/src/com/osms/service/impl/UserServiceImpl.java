@@ -412,10 +412,11 @@ public class UserServiceImpl implements UserService{
 			{
 				for(AMCOnUser amc:teacher.getAmcOnUsers())
 				{
-					if(amc!=null&&amc.getId()!=0&&amc.getUserId()==0)
+					System.out.println("amc : "+amc);
+					if(amc!=null&&amc.getId()!=0)
 					{
 						amcOnUserDao.update(amc, conn);//id not null
-					}else if(amc!=null&&amc.getId()==0&&amc.getUserId()!=0)
+					}else
 					{
 						amcOnUserDao.save(amc, conn);//userId not null
 					}
@@ -426,8 +427,6 @@ public class UserServiceImpl implements UserService{
 			{
 				apartmentRollDao.update(teacher.getApartmentRoll(), conn);
 			}
-			
-			System.out.println("2  "+teacher+"  "+teacher.getAmcOnUsers()+"  "+teacher.getApartmentRoll());
 			//transaction commit
 			conn.commit();
 

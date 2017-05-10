@@ -46,7 +46,10 @@ public class IndexAction extends HttpServlet{
 	private void initPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		Introduce introduce=introduceDao.getIntroduceByIntroduceId(1);
-		request.getSession().setAttribute(Constants.INTRODUCE, introduce.getIntroduceContent());
+		if(introduce!=null)
+		{
+			request.getSession().setAttribute(Constants.INTRODUCE, introduce.getIntroduceContent());
+		}
 		request.getRequestDispatcher("WEB-INF/views/index.jsp").forward(request, response);	
 	}
 

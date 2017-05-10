@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +23,7 @@ import com.osms.bean.AcademyMajorBean;
 import com.osms.bean.SearchForm;
 import com.osms.dao.ProfessionalTypeDao;
 import com.osms.dao.SearchByPagesDao;
+import com.osms.dao.UserDao;
 import com.osms.dao.UserTypeDao;
 import com.osms.entity.AMCOnUser;
 import com.osms.entity.Academy;
@@ -66,6 +68,9 @@ public class TeacherMgrAction extends HttpServlet {
 	
 	@Autowired
 	ProfessionalTypeDao professionalTypeDao;
+	
+	@Autowired
+	UserDao userDao;
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -98,6 +103,17 @@ public class TeacherMgrAction extends HttpServlet {
 		{
 			updateTeacher(request, response);
 		}
+		if(Constants.DELETE.toLowerCase().equals(type.toLowerCase()))
+		{
+			String id=request.getParameter("id").trim();
+			Users teacher=userDao.getUserByUserId(Integer.parseInt(id));
+			teacher.setStatus(-1);
+			userDao.update(teacher);
+			JSONObject json=new JSONObject();
+			json.element("success", true);
+			response.setCharacterEncoding("UTF-8");
+			ControllerUtil.out(response, json);
+		}
 	}
 	
 	/**
@@ -113,11 +129,27 @@ public class TeacherMgrAction extends HttpServlet {
 		String jsonAmcOnUsers=request.getParameter("amcOnUsers").trim();
 		Users teacher=(Users) JSONUtil.jsonToBean(jsonTeacher, Users.class);
 		List<AMCOnUser> amcOnUsers=JSONUtil.jsonToList(jsonAmcOnUsers, AMCOnUser.class);
-
-		System.out.println("amcONUsers : "+amcOnUsers);
+		for(AMCOnUser amc:amcOnUsers)
+		{
+			amc.setUser(null);
+			amc.setAcademy(null);
+			amc.setMajor(null);
+			amc.setCclass(null);
+		}
 		teacher.setAmcOnUsers(amcOnUsers);
-		System.out.println("teacher : "+teacher);
+		System.out.println(teacher.getUserTypeId());
+		System.out.println("ttttt: "+amcOnUsers);
 		Users user=userService.getUser(teacher.getUserId(), Constants.TEACHER);
+		
+		for(AMCOnUser amc:user.getAmcOnUsers())
+		{
+			amc.setUser(null);
+			amc.setAcademy(null);
+			amc.setMajor(null);
+			amc.setCclass(null);
+			amc.setStatus(-1);
+		}
+		System.out.println("uuuuu: "+user.getAmcOnUsers());
 		int status=checkInfo(request, response, teacher, user);
 		
 		if(status!=0)
@@ -125,8 +157,7 @@ public class TeacherMgrAction extends HttpServlet {
 			return;
 		}else
 		{
-			System.out.println("ok");
-			userService.updateTeacher(teacher);
+			userService.updateTeacher(user);
 			JSONObject json=new JSONObject();
 			json.element("success", true);
 			response.setCharacterEncoding("UTF-8");
@@ -394,16 +425,16 @@ public class TeacherMgrAction extends HttpServlet {
 			}
 		}
 		
-		status=userService.checkCard(user.getApartmentRoll().getCardNumber());
-		
-		if(status!=0)
-		{
-			if(status==1)
-			{
-				ERROR="卡号长度应为11位";
-				request.getSession().setAttribute(Constants.ERROR, ERROR);
-			}
-		}
+//		status=userService.checkCard(user.getApartmentRoll().getCardNumber());
+//		
+//		if(status!=0)
+//		{
+//			if(status==1)
+//			{
+//				ERROR="卡号长度应为11位";
+//				request.getSession().setAttribute(Constants.ERROR, ERROR);
+//			}
+//		}
 		status=userService.checkPhone(user.getPhone());
 		
 		if(status!=0)
@@ -482,12 +513,65 @@ public class TeacherMgrAction extends HttpServlet {
 		}
 		if(status!=0)
 		{
-//			request.getRequestDispatcher("/WEB-INF/views/admin/teacherMgr.jsp").forward(request, response);
 			JSONObject json=new JSONObject();
 			json.element("success", false);
 			json.element("msg", ERROR);
 			response.setCharacterEncoding("UTF-8");
 			ControllerUtil.out(response, json);
+		}else
+		{
+			if(teacher.getFullName()!=null)
+			{
+				user.setFullName(teacher.getFullName());
+			}
+			if(teacher.getApartmentRoll().getCardNumber()!=null)
+			{
+				user.getApartmentRoll().setCardNumber(teacher.getApartmentRoll().getCardNumber());
+			}
+			if(teacher.getPhone()!=null)
+			{
+				user.setPhone(teacher.getPhone());
+			}
+			if(teacher.getEmail()!=null)
+			{
+				user.setEmail(teacher.getEmail());
+			}
+			if(teacher.getGender()!=0)
+			{
+				user.setGender(teacher.getGender());
+			}
+			if(teacher.getApartmentRoll().getProfessionalTitleTypeId()!=0)
+			{
+				user.getApartmentRoll().setProfessionalTitleTypeId(teacher.getApartmentRoll().getProfessionalTitleTypeId());
+			}
+			if(teacher.getUserTypeId()!=0)
+			{
+				user.setUserTypeId(teacher.getUserTypeId());
+			}
+			if(teacher.getAmcOnUsers()!=null)
+			{
+				for(AMCOnUser amc:teacher.getAmcOnUsers())
+				{
+					amc.setUserId(user.getUserId());
+					amc.setStatus(Integer.parseInt(Constants.STATUS_OK));
+					if(amc.getId()==0)
+					{
+						user.getAmcOnUsers().add(amc);
+					}else
+					{
+						for(AMCOnUser amcOnUser:user.getAmcOnUsers())
+						{
+							if(amcOnUser.getId()==amc.getId())
+							{
+								amcOnUser.setAcademyId(amc.getAcademyId());
+								amcOnUser.setMajorId(amc.getMajorId());
+								amcOnUser.setClassId(amc.getClassId());
+								amcOnUser.setStatus(amc.getStatus());
+							}
+						}
+					}
+				}
+			}
 		}
 		return status;
 	}
@@ -584,7 +668,7 @@ public class TeacherMgrAction extends HttpServlet {
 		request.getSession().setAttribute("classMap", classMap);
 		
 		
-		System.out.println(academyMap);
+		System.out.println(majorMap);
 		
 		List<ProfessionalTitleType> professionalTitleTyps=professionalTypeDao.getAllProfessionalType();
 		request.getSession().setAttribute("professionalTitleTypes", professionalTitleTyps);

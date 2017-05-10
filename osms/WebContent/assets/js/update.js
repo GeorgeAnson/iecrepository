@@ -60,6 +60,8 @@ $(".foreignInfo").click(function(){
 	});
 
 
+
+
 $("#exportBtn").click(function(){
 	var academyId = $('#academy option:selected').val();
 	var majorId = $('#major option:selected').val();
@@ -73,3 +75,5 @@ $("#exportBtn").click(function(){
 	form.submit();    
 	form.remove(); 
 });
+
+

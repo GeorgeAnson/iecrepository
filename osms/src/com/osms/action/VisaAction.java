@@ -71,30 +71,6 @@ public class VisaAction extends HttpServlet {
 		}
 		if(Constants.INIT.toLowerCase().equals(type.toLowerCase()))
 		{
-//			if(usr.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
-//			{
-				//get user by amcOnUser
-//				List<Payment> payments=paymentService.searchByPaymentOnUserId(usr.getUserId());
-//				List<VisaForm> visas=new ArrayList<VisaForm>();
-//				for(Payment p:payments)
-//				{
-//					VisaForm visaForm=new VisaForm();
-//					visaForm.setPayment(p);
-//					visaForm.setUser(p.getUser());
-//					VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(p.getUser().getUserId());
-//					List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(p.getUser().getUserId());
-//					visaForm.setVisaOnUser(visaOnUser);
-//					visaForm.setPassportOnUsers(passportOnUsers);
-//					visas.add(visaForm);
-//					System.out.println(visaForm);
-//				}
-//				request.getSession().setAttribute("visaForms", visas);
-//				request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
-//				return;
-//			}else
-//			{
-//				initPage(request, response);
-//			}
 			initPage(request, response);
 		}
 		if(Constants.SEARCH.toLowerCase().equals(type.toLowerCase()))
@@ -113,15 +89,37 @@ public class VisaAction extends HttpServlet {
 	private void initPage(HttpServletRequest request, HttpServletResponse response) 
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
-		Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
-		Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
-		amcService.matchAllAMC(academyMap, majorMap, classMap);
-		request.getSession().setAttribute("academyMap", academyMap);
-		request.getSession().setAttribute("majorMap", majorMap);
-		request.getSession().setAttribute("classMap", classMap);
-		
-		request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+		if(usr.getUserTypeId()==4)
+		{
+			List<Payment> payments=paymentService.getPaymentByUserId(usr.getUserId());
+			List<VisaForm> visas=new ArrayList<VisaForm>();
+			for(Payment p:payments)
+			{
+				VisaForm visaForm=new VisaForm();
+				visaForm.setPayment(p);
+				visaForm.setUser(p.getUser());
+				VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(usr.getUserId());
+				visaForm.setVisaOnUser(visaOnUser);
+				List<PassportOnUser> passportOnUsers=passportOnUserService.getPassportOnUserByUserId(usr.getUserId());
+				visaForm.setPassportOnUsers(passportOnUsers);
+
+				visas.add(visaForm);
+				visaForm.getUser().setEmail(null);
+			}
+			request.getSession().setAttribute("visaForms", visas);
+			request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+		}else
+		{
+			Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
+			Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
+			Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
+			amcService.matchAllAMC(academyMap, majorMap, classMap);
+			request.getSession().setAttribute("academyMap", academyMap);
+			request.getSession().setAttribute("majorMap", majorMap);
+			request.getSession().setAttribute("classMap", classMap);
+			
+			request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
+		}
 	}
 
 	/**
@@ -147,14 +145,9 @@ public class VisaAction extends HttpServlet {
 		int limit=Integer.parseInt(Constants.LIMIT_PER_PAGE_DATA);
 		//get page and pages
 		getSearchPage(request, limit, count, searchForm);
-		//get schoolYear and semester
-		parma.put("schoolYear", "'"+searchForm.getSchoolYear()+"'");
-		parma.put("theSemester", searchForm.getThsSemester());
 		//get user by amcOnUser
 		List<Payment> payments=paymentService.searchByPaymentOnamc(parma, limit, searchForm.getPage(), count);
-		
 		List<VisaForm> visas=new ArrayList<VisaForm>();
-		
 		for(Payment p:payments)
 		{
 			VisaForm visaForm=new VisaForm();
@@ -229,16 +222,7 @@ public class VisaAction extends HttpServlet {
 			String academyId=request.getParameter("academyId").trim();
 			String majorId=request.getParameter("majorId").trim();
 			String cclassId=request.getParameter("cclassId").trim();
-			String schoolYear=request.getParameter("schoolYear").trim();
-			String theSemester=request.getParameter("theSemester").trim();
 			
-			if(schoolYear==null||"".equals(schoolYear)
-					||theSemester==null||"".equals(theSemester))
-			{
-				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-				return;
-			}
 			parma.put("userType", Constants.STUDENT);
 			if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
 			{
@@ -255,28 +239,9 @@ public class VisaAction extends HttpServlet {
 				parma.put("cclass", Integer.parseInt(cclassId));
 				searchForm.setCclassId(Integer.parseInt(cclassId));
 			}
-			if(schoolYear!=null&&!"".equals(schoolYear))
-			{
-				searchForm.setSchoolYear(schoolYear);
-			}
-			if(theSemester!=null&&!"".equals(theSemester))
-			{
-				searchForm.setThsSemester(Integer.parseInt(theSemester));
-			}
 		}else
 		{
-			String schoolYear=request.getParameter("schoolYear").trim();
-			String theSemester=request.getParameter("theSemester").trim();
-			
-			if(schoolYear==null||"".equals(schoolYear)
-					||theSemester==null||"".equals(theSemester))
-			{
-				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-				return;
-			}
 			parma.put("userType", Constants.STUDENT);
-			
 			AMCOnUser amcOnUser=amcOnUserDao.getAMCOnUserByUserId(usr.getUserId()).get(0);
 			parma.put("academy", amcOnUser.getAcademyId());
 			searchForm.setAcademyId(amcOnUser.getAcademyId());
@@ -284,53 +249,8 @@ public class VisaAction extends HttpServlet {
 			searchForm.setMajorId(amcOnUser.getMajorId());
 			parma.put("cclass", amcOnUser.getClassId());
 			searchForm.setCclassId(amcOnUser.getClassId());
-			if(schoolYear!=null&&!"".equals(schoolYear))
-			{
-				searchForm.setSchoolYear(schoolYear);
-			}
-			if(theSemester!=null&&!"".equals(theSemester))
-			{
-				searchForm.setThsSemester(Integer.parseInt(theSemester));
-			}
+			
 		}
-		
-//		String academyId=request.getParameter("academyId").trim();
-//		String majorId=request.getParameter("majorId").trim();
-//		String cclassId=request.getParameter("cclassId").trim();
-//		String schoolYear=request.getParameter("schoolYear").trim();
-//		String theSemester=request.getParameter("theSemester").trim();
-//		
-//		if(schoolYear==null||"".equals(schoolYear)
-//				||theSemester==null||"".equals(theSemester))
-//		{
-//			request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-//			request.getRequestDispatcher("/WEB-INF/views/visa.jsp").forward(request, response);
-//			return;
-//		}
-//		parma.put("userType", Constants.STUDENT);
-//		if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
-//		{
-//			parma.put("academy", Integer.parseInt(academyId));
-//			searchForm.setAcademyId(Integer.parseInt(academyId));
-//		}
-//		if(majorId!=null&&!"".equals(majorId)&&!"0".equals(majorId))
-//		{
-//			parma.put("major", Integer.parseInt(majorId));
-//			searchForm.setMajorId(Integer.parseInt(majorId));
-//		}
-//		if(cclassId!=null&&!"".equals(cclassId)&&!"0".equals(cclassId))
-//		{
-//			parma.put("cclass", Integer.parseInt(cclassId));
-//			searchForm.setCclassId(Integer.parseInt(cclassId));
-//		}
-//		if(schoolYear!=null&&!"".equals(schoolYear))
-//		{
-//			searchForm.setSchoolYear(schoolYear);
-//		}
-//		if(theSemester!=null&&!"".equals(theSemester))
-//		{
-//			searchForm.setThsSemester(Integer.parseInt(theSemester));
-//		}
 	}
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

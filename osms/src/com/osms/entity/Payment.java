@@ -19,8 +19,8 @@ public class Payment implements Serializable{
 	private int id=0;//payment on user id
 	private int userId=0;//user id
 	private int paymentTypeId=0;//payment type id
-	private String schoolYear;//
-	private int theSemester=0;//this semester
+	private Date validTime=null;//
+	private Date invalidTime=null;//this semester
 	private double totalMoney=0;//totally needs to pay
 	private double money=0;//total money 
 	private int paymentOprUser=0;//operate root's id
@@ -43,19 +43,25 @@ public class Payment implements Serializable{
 	}
 
 
-	public Payment(int id, int userId, int paymentTypeId, String schoolYear, int theSemester, double totalMoney,
-			double money, int paymentOprUser, Date payDate, String describle, int status) {
+	public Payment(int id, int userId, int paymentTypeId, Date validTime, Date invalidTime, double totalMoney,
+			double money, int paymentOprUser, Date payDate, String describle, int status, Users user, Users oprUser,
+			PaymentType paymentType, List<PaymentType> paymentTypes) {
+		super();
 		this.id = id;
 		this.userId = userId;
 		this.paymentTypeId = paymentTypeId;
-		this.schoolYear = schoolYear;
-		this.theSemester = theSemester;
+		this.validTime = validTime;
+		this.invalidTime = invalidTime;
 		this.totalMoney = totalMoney;
 		this.money = money;
 		this.paymentOprUser = paymentOprUser;
 		this.payDate = payDate;
 		this.describle = describle;
 		this.status = status;
+		this.user = user;
+		this.oprUser = oprUser;
+		this.paymentType = paymentType;
+		this.paymentTypes = paymentTypes;
 	}
 
 
@@ -89,23 +95,23 @@ public class Payment implements Serializable{
 	}
 
 
-	public String getSchoolYear() {
-		return schoolYear;
+	public Date getValidTime() {
+		return validTime;
 	}
 
 
-	public void setSchoolYear(String schoolYear) {
-		this.schoolYear = schoolYear;
+	public void setValidTime(Date validTime) {
+		this.validTime = validTime;
 	}
 
 
-	public int getTheSemester() {
-		return theSemester;
+	public Date getInvalidTime() {
+		return invalidTime;
 	}
 
 
-	public void setTheSemester(int theSemester) {
-		this.theSemester = theSemester;
+	public void setInvalidTime(Date invalidTime) {
+		this.invalidTime = invalidTime;
 	}
 
 
@@ -211,13 +217,11 @@ public class Payment implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Payment [id=" + id + ", userId=" + userId + ", paymentTypeId=" + paymentTypeId + ", schoolYear="
-				+ schoolYear + ", theSemester=" + theSemester + ", totalMoney=" + totalMoney + ", money=" + money
+		return "Payment [id=" + id + ", userId=" + userId + ", paymentTypeId=" + paymentTypeId + ", validTime="
+				+ validTime + ", invalidTime=" + invalidTime + ", totalMoney=" + totalMoney + ", money=" + money
 				+ ", paymentOprUser=" + paymentOprUser + ", payDate=" + payDate + ", describle=" + describle
 				+ ", status=" + status + ", user=" + user + ", oprUser=" + oprUser + ", paymentType=" + paymentType
 				+ ", paymentTypes=" + paymentTypes + "]";
 	}
-
-
 	
 }

@@ -13,12 +13,12 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-public class ExportToWordUtil {
+public class ExportUtil {
 	
 	private Configuration configuration=null;
 	private Map<String, Template> teMap=null;
 	
-	public File exportToWord(Map<?, ?> dataMap, String type, String valueName, String realPath, String fType)
+	public File exportToWordOrExcel(Map<?, ?> dataMap, String type, String valueName, String realPath, String fType)
 	{
 		configuration=new Configuration();
 		configuration.setDefaultEncoding("utf-8");

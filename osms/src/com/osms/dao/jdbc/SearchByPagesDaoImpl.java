@@ -206,14 +206,14 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		{
 			psql.append(" AND "+entity.getKey()+" = "+entity.getValue());
 		}
-		StringBuilder sql=new StringBuilder("SELECT * FROM ( SELECT row_number() over ( order by userId)"
-				+ " rownumber, userId, fullName, userPhone, email, schoolYear, theSemester, totalMoney, money, paymentTypeId, paymentTypecName, paymentOprUser, describle"
+		StringBuilder sql=new StringBuilder("select * from ( SELECT Dense_rank() over (order by userId) dr,* from (  SELECT DISTINCT Dense_rank() over (order by invalidTime DESC)"
+				+ "rownumber, userId, fullName, userPhone, email, totalMoney, money, paymentTypeId, paymentTypecName, paymentOprUser, describle, validTime, invalidTime "
 				+ " FROM Users, AMCOnUser, Payment, PaymentType"
 				+ " WHERE userStatus=1 AND paymentStatus=1 AND paymentTypeStatus=1"
 				+ " AND userId=amcOnUserUser AND userId=paymentUser AND paymentTypeId=paymentType ");
 		sql.append(psql);
 		System.out.println("psql:"+psql);
-		sql.append(") a  WHERE rownumber BETWEEN "+min+" AND "+max);
+		sql.append(")a)b  WHERE dr BETWEEN "+min+" AND "+max);
 		System.out.println(sql.toString());
 		try {
 			ps=conn.prepareStatement(sql.toString());
@@ -227,8 +227,8 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 				user.setEmail(rs.getString("email"));
 				Payment payment=new Payment();
 				payment.setUser(user);
-				payment.setSchoolYear(rs.getString("schoolYear"));
-				payment.setTheSemester(rs.getInt("theSemester"));
+				payment.setValidTime(rs.getDate("validTime"));
+				payment.setInvalidTime(rs.getDate("invalidTime"));
 				payment.setTotalMoney(rs.getDouble("totalMoney"));
 				payment.setMoney(rs.getDouble("money"));
 				payment.setPaymentOprUser(rs.getInt("paymentOprUser"));
@@ -258,10 +258,11 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 		List<Payment> payments= new ArrayList<Payment>();
 	
 		StringBuilder sql=new StringBuilder(
-				"SELECT userId, fullName, userPhone, email, schoolYear, theSemester, totalMoney, money, paymentTypeId, paymentTypecName, paymentOprUser, describle"
+				"select * from ( SELECT Dense_rank() over (order by userId) dr,* from (  SELECT DISTINCT Dense_rank() over (order by invalidTime DESC)"
+				+ "rownumber, userId, fullName, userPhone, email, totalMoney, money, paymentTypeId, paymentTypecName, paymentOprUser, describle, validTime, invalidTime "
 				+ " FROM Users, AMCOnUser, Payment, PaymentType"
-				+ " WHERE userStatus=1 AND paymentStatus=1 AND paymentTypeStatus=1"
-				+ " AND userId=amcOnUserUser AND userId=paymentUser AND paymentTypeId=paymentType AND userId="+userId);
+				+ " WHERE userStatus=1 AND paymentStatus=1 AND paymentTypeStatus=1 AND userId="+userId
+				+ " AND userId=amcOnUserUser AND userId=paymentUser AND paymentTypeId=paymentType )a)b");
 
 		System.out.println(sql.toString());
 		try {
@@ -276,8 +277,8 @@ public class SearchByPagesDaoImpl extends JDBCBase implements SearchByPagesDao {
 				user.setEmail(rs.getString("email"));
 				Payment payment=new Payment();
 				payment.setUser(user);
-				payment.setSchoolYear(rs.getString("schoolYear"));
-				payment.setTheSemester(rs.getInt("theSemester"));
+				payment.setValidTime(rs.getDate("validTime"));
+				payment.setInvalidTime(rs.getDate("invalidTime"));
 				payment.setTotalMoney(rs.getDouble("totalMoney"));
 				payment.setMoney(rs.getDouble("money"));
 				payment.setPaymentOprUser(rs.getInt("paymentOprUser"));

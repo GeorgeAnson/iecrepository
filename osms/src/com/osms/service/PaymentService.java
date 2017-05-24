@@ -44,4 +44,11 @@ public interface PaymentService {
 	 * @return
 	 */
 	public List<Payment> searchByPaymentOnUserId(int userId);
+
+	/**
+	 * get detail
+	 * @param userId
+	 * @return
+	 */
+	public List<Payment> getPaymentForDifferTypeByUserId(int userId);
 }

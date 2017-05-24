@@ -51,17 +51,12 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <listener>
-    <listener-class>    
+    <listener-class>
             com.osms.listener.OnLineListener 
         </listener-class>
   </listener>
-  <listener>
-    <listener-class>    
-           com.osms.listener.SessionListener 
-        </listener-class>
-  </listener>
   <session-config>
-    <session-timeout>1000</session-timeout>
+    <session-timeout>20</session-timeout>
   </session-config>
   <filter>
     <filter-name>userFilter</filter-name>

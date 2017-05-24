@@ -30,7 +30,7 @@ import com.osms.entity.Users;
 import com.osms.globle.Constants;
 import com.osms.service.UserService;
 import com.osms.utils.ExportToExcelUtil;
-import com.osms.utils.ExportToWordUtil;
+import com.osms.utils.ExportUtil;
 import com.osms.utils.Utils;
 
 @Component
@@ -42,12 +42,18 @@ public class ExportAction extends HttpServlet{
 	private static final long serialVersionUID = 1L;
 	//file type-doc
 	private static String WORD_TYPE=".doc";
-	//file-word
+	//file type-doc
+	private static String EXCEL_TYPE=".xls";
+	//file-xls
 	private static String WORD="word";
-	//model name-word
-	private static String WORD_MODEL="visaModel.ftl";
+	//file-xls
+	private static String EXCEL="excel";
+	//model name-visa-old-doc type
+	private static String VISA_WORD_MODEL="visaModel.ftl";
+	//visa -new -excel type
+	private static String VISA_XLS_MODEL="visa.ftl";
 	//filename-201table
-	private static String VISA_DOC="visa.doc";
+	private static String VISA_XLS="visa.xls";
 	//model name-word
 	private static String DOC_MODEL="entrance.ftl";
 	//filename-entrance document
@@ -70,26 +76,33 @@ public class ExportAction extends HttpServlet{
 		String type=request.getParameter("type").trim();
 		if(Constants.EXCEL.toLowerCase().equals(type.toLowerCase()))
 		{
-			//new bean for excel
+			//new bean,202-table->visa-new
 			exportExcel(request, response);
 		}
 		if(Constants.EXCELS.toLowerCase().equals(type.toLowerCase()))
 		{
-			//zip excel
+			//zip excel学生信息
 			exportExcelsToZip(request, response);
 		}
 		if(Constants.TABLE.toLowerCase().equals(type.toLowerCase()))
 		{
-			//new bean for word,202table
+			//202table->visa-old
 			exportTable(request, response);
 		}
 		
 		if(Constants.DOC.toLowerCase().equals(type.toLowerCase()))
 		{
+			//entrance.doc
 			exportDOC(request, response);
 		}
 	}
 
+	/**
+	 * 导出入学通知书
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	private void exportDOC(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		int userId=Integer.parseInt(request.getParameter("id").trim());
@@ -101,12 +114,13 @@ public class ExportAction extends HttpServlet{
 		dataMap.put("cmonth", Utils.formatMonth(user.getSchoolRoll().getComeDate()));
 		dataMap.put("lyear", Utils.formatYear(user.getSchoolRoll().getLeaveDate()));
 		dataMap.put("lmonth", Utils.formatMonth(user.getSchoolRoll().getLeaveDate()));
-		
+		dataMap.put("cmajor", user.getAmcOnUsers().get(0).getMajor().getcName());
+		dataMap.put("emajor", user.getAmcOnUsers().get(0).getMajor().geteName());
 		dataMap.put("year", Utils.formatYear(new Date()));
 		dataMap.put("month", Utils.formatMonth(new Date()));
 		dataMap.put("day", Utils.formatDay(new Date()));
 		
-		ExportToWordUtil exportToWordUtil=new ExportToWordUtil();
+		ExportUtil exportToWordUtil=new ExportUtil();
 		String path=request.getServletContext().getRealPath("/")+"WEB-INF/model";
 //		String fileName=path+"/"+Utils.createRandomName()+".doc";
 		File file=null;
@@ -115,7 +129,7 @@ public class ExportAction extends HttpServlet{
 		try
 		{
 			request.setCharacterEncoding("UTF-8");
-			file=exportToWordUtil.exportToWord(dataMap, WORD, DOC_MODEL, path, WORD_TYPE);
+			file=exportToWordUtil.exportToWordOrExcel(dataMap, WORD, DOC_MODEL, path, WORD_TYPE);
 			inputStream=new  FileInputStream(file);
 			response.setContentType("application/msword");
 			response.setHeader("content-disposition", "attachment;filename="+URLEncoder.encode(ENTRANCE_DOC,"UTF-8"));
@@ -147,6 +161,11 @@ public class ExportAction extends HttpServlet{
 		}
 	}
 
+	/**
+	 * 批量导出学生信息
+	 * @param request
+	 * @param response
+	 */
 	private void exportExcelsToZip(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
 		ExportToExcelUtil<Export> execlUtil=new ExportToExcelUtil<Export>();
@@ -223,7 +242,7 @@ public class ExportAction extends HttpServlet{
 
 
 	/**
-	 * export to word
+	 * 导出签证信息-old
 	 * @param request
 	 * @param response
 	 * @throws IOException 
@@ -261,7 +280,7 @@ public class ExportAction extends HttpServlet{
 		dataMap.put("guaranteecName", user.getVisaOnUser().getVisa().getGuarantee().getGuaranteecName());
 		dataMap.put("guaranteePhone", user.getVisaOnUser().getVisa().getGuarantee().getGuaranteePhone());
 
-		ExportToWordUtil exportToWordUtil=new ExportToWordUtil();
+		ExportUtil exportToWordUtil=new ExportUtil();
 		String path=request.getServletContext().getRealPath("/")+"WEB-INF/model";
 //		String fileName=path+"/"+Utils.createRandomName()+".doc";
 		File file=null;
@@ -270,10 +289,10 @@ public class ExportAction extends HttpServlet{
 		try
 		{
 			request.setCharacterEncoding("UTF-8");
-			file=exportToWordUtil.exportToWord(dataMap, WORD, WORD_MODEL, path, WORD_TYPE);
+			file=exportToWordUtil.exportToWordOrExcel(dataMap, WORD, VISA_WORD_MODEL, path, WORD_TYPE);
 			inputStream=new  FileInputStream(file);
 			response.setContentType("application/msword");
-			response.setHeader("content-disposition", "attachment;filename="+URLEncoder.encode(VISA_DOC,"UTF-8"));
+			response.setHeader("content-disposition", "attachment;filename="+URLEncoder.encode("visa.doc","UTF-8"));
 			servletOutputStream=response.getOutputStream();
 			byte[] buffer=new byte[512];
 			int read=-1;
@@ -303,7 +322,7 @@ public class ExportAction extends HttpServlet{
 	}
 
 	/**
-	 * export to excel
+	 * export to excel-202table->visa-new
 	 * @param request
 	 * @param response
 	 * @throws IOException 
@@ -312,7 +331,74 @@ public class ExportAction extends HttpServlet{
 	private void exportExcel(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
+		int userId=Integer.parseInt(request.getParameter("id").trim());
+		Users user=userService.getUser(userId, Constants.STUDENT);
+		Map<String, Object>dataMap=new HashMap<>();
+		dataMap.put("place", Constants.SOFTWARE_OWNER);
+		dataMap.put("fullName", user.getFullName());
+		dataMap.put("cName", user.getIdentityOnUser().getNationality().getcName());
+		dataMap.put("passportNumber", user.getPassportOnUsers().get(0).getPassport().getPassportNumber());
+		dataMap.put("gender", user.getGender()==1?"男":"女");
+		dataMap.put("isMarried", user.getIdentityOnUser().getIsMarried()==1?"已婚":"未婚");
+		dataMap.put("byear", Utils.formatYear(user.getIdentityOnUser().getBirthday()));
+		dataMap.put("bmonth", Utils.formatMonth(user.getIdentityOnUser().getBirthday()));
+		dataMap.put("bdate", Utils.formatDay(user.getIdentityOnUser().getBirthday()));
+		dataMap.put("birthpalce", user.getIdentityOnUser().getBirthplace());
+		dataMap.put("homeAddress", user.getIdentityOnUser().getHomeAddress());
+		dataMap.put("homePhone", user.getIdentityOnUser().getPhone());
+		dataMap.put("educationTypecName", user.getEducationOnUser().getEducationType().getcName());
+		dataMap.put("occupation", "学生");
+		dataMap.put("majorcName", user.getAmcOnUsers().get(0).getMajor().getcName());
+		dataMap.put("cyear", Utils.formatYear(user.getSchoolRoll().getComeDate()));
+		dataMap.put("cmonth", Utils.formatMonth(user.getSchoolRoll().getComeDate()));
+		dataMap.put("lyear", Utils.formatYear(user.getSchoolRoll().getLeaveDate()));
+		dataMap.put("lmonth", Utils.formatMonth(user.getSchoolRoll().getLeaveDate()));
+		dataMap.put("studentTypecName", user.getSchoolRoll().getStudentType().getStudentTypecName());
+		dataMap.put("ryear", Utils.formatYear(user.getVisaOnUser().getVisa().getRegisterDeadLine()));
+		dataMap.put("rmonth", Utils.formatMonth(user.getVisaOnUser().getVisa().getRegisterDeadLine()));
+		dataMap.put("rdate", Utils.formatDay(user.getVisaOnUser().getVisa().getRegisterDeadLine()));
+		dataMap.put("guaranteecName", user.getVisaOnUser().getVisa().getGuarantee().getGuaranteecName());
+		dataMap.put("guaranteePhone", user.getVisaOnUser().getVisa().getGuarantee().getGuaranteePhone());
+
+		ExportUtil exportUtil=new ExportUtil();
+		String path=request.getServletContext().getRealPath("/")+"WEB-INF/model";
+//		String fileName=path+"/"+Utils.createRandomName()+".doc";
+		File file=null;
+		InputStream inputStream=null;
+		ServletOutputStream servletOutputStream=null;
+		try
+		{
+			request.setCharacterEncoding("UTF-8");
+			file=exportUtil.exportToWordOrExcel(dataMap, EXCEL, VISA_XLS_MODEL, path, EXCEL_TYPE);
+			inputStream=new  FileInputStream(file);
+			response.setContentType("application/msword");
+			response.setHeader("content-disposition", "attachment;filename="+URLEncoder.encode(VISA_XLS,"UTF-8"));
+			servletOutputStream=response.getOutputStream();
+			byte[] buffer=new byte[512];
+			int read=-1;
+			while((read=inputStream.read(buffer))!=-1)
+			{
+				servletOutputStream.write(buffer, 0, read);
+			}
+			servletOutputStream.flush();
+			
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}finally {
+			if(inputStream!=null)
+			{
+				inputStream.close();
+			}
+			if(servletOutputStream!=null)
+			{
+				servletOutputStream.close();
+			}
+			if(file!=null)
+			{
+				file.delete();
+			}
+		}
 	}
 	
 	

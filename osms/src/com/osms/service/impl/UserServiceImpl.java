@@ -127,13 +127,6 @@ public class UserServiceImpl implements UserService{
 			
 			if(user.getSchoolRoll().getStudentTypeId()==1)
 			{
-				//he is overSea student
-				//fundingOnUser 
-//				for(FundingOnUser f:user.getFundingOnUsers())
-//				{
-//					f.setUserId(userId);
-//					fundingOnUserDao.save(f, conn);
-//				}
 				//VisaOnUser
 				user.getVisaOnUser().setUserId(userId);
 				//save visa

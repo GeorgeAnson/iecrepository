@@ -260,7 +260,7 @@ public class Packager {
 		visa.setRegisterDeadLine(rs.getDate("registerDeadLine"));
 		visa.setIntermediaryName(rs.getString("intermediaryName"));
 		visa.setIntermediaryPhone(rs.getString("intermediaryPhone"));
-		visa.setVisaDueDate(rs.getDate("visaDueDate"));
+//		visa.setVisaDueDate(rs.getDate("visaDueDate"));
 		visa.setStatus(rs.getInt("visaStatus"));
 		return visa;
 	}
@@ -531,8 +531,8 @@ public class Packager {
 		payment.setId(rs.getInt("paymentId"));
 		payment.setUserId(rs.getInt("paymentUser"));
 		payment.setPaymentTypeId(rs.getInt("paymentType"));
-		payment.setSchoolYear(rs.getString("schoolYear"));
-		payment.setTheSemester(rs.getInt("theSemester"));
+		payment.setValidTime(rs.getDate("validTime"));
+		payment.setInvalidTime(rs.getDate("invalidTime"));
 		payment.setTotalMoney(rs.getDouble("totalMoney"));
 		payment.setMoney(rs.getDouble("money"));
 		payment.setPaymentOprUser(rs.getInt("paymentOprUser"));

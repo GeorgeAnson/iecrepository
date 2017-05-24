@@ -1,35 +1,57 @@
 package com.osms.listener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 import com.osms.entity.Users;
 import com.osms.globle.Constants;
 
 
-/**
- * 单机登录监听器,控制同一用户不会多客户端同时在线
- */
-public class OnLineListener implements HttpSessionAttributeListener {
 
+/**
+ * 单机登录监听,控制同一用户不会多客户端同时在线
+ */
+public class OnLineListener implements HttpSessionListener, HttpSessionAttributeListener {
+	
+	
+	
 	/**
 	 * 不同的会话Session中，Servlet中调用setAttribute保存信息
 	 * @event session绑定该属性的事件
 	 */
 	@Override
 	public void attributeAdded(HttpSessionBindingEvent event) {
-
-		// 只处理用户登录时保存的用户在线标识的信息
-		if (event.getName().equals(Constants.USER)) {
-			// 进行用户添加
-			Users user=(Users) event.getValue();
-			int userId=user.getUserId();			
-			addToApplication(userId, event.getSession());
+		if(event.getValue()!=null)
+		{
+			Object obj=(Object) event.getValue();
+			if(obj instanceof Users)
+			{
+				//获取application作用域对象
+				ServletContext context = event.getSession().getServletContext();
+				if(context.getAttribute(Constants.ONLINE_USERS)==null)
+				{
+					context.setAttribute(Constants.ONLINE_USERS, new HashMap<Integer, String>());
+				}
+				@SuppressWarnings("unchecked")
+				HashMap<Integer, String> userMap=(HashMap<Integer, String>) context.getAttribute(Constants.ONLINE_USERS);
+				userMap.put(((Users) obj).getUserId(), event.getSession().getId());
+				System.out.println("添加用户： "+((Users) obj).getUserId());
+				
+				for(Entry<Integer, String> entry:userMap.entrySet())
+				{
+					System.out.println("在线用户："+entry);
+				}
+			}
+			
 		}
 	}
 
@@ -40,14 +62,22 @@ public class OnLineListener implements HttpSessionAttributeListener {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void attributeRemoved(HttpSessionBindingEvent event) {
-		String name = event.getName();
-		// 注销
-		if (name.equals(Constants.USER)) {
-			// 将该session从map中移
-			Users user=(Users) event.getValue();
-			int userId=user.getUserId();
+		Object obj=(Object) event.getValue();
+		if(obj instanceof Users)
+		{
 			Map<Integer, String> userMap=(Map<Integer, String>) event.getSession().getServletContext().getAttribute(Constants.ONLINE_USERS);
-			userMap.remove(userId);
+			if(userMap!=null)
+			{
+				userMap.remove(((Users) obj).getUserId());
+				System.out.println("移除用户  : "+((Users) obj).getUserId());
+			}
+			if(userMap!=null)
+			{
+				for(Entry<Integer, String> entry:userMap.entrySet())
+				{
+					System.out.println("在线用户："+entry);
+				}	
+			}
 		}
 	}
 
@@ -55,16 +85,30 @@ public class OnLineListener implements HttpSessionAttributeListener {
 	public void attributeReplaced(HttpSessionBindingEvent event) {
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	private void addToApplication(int userId, HttpSession session) {
-		//获取application作用域对象
-		ServletContext context = session.getServletContext();
-		//如果在线用户列表为空则进行初始化
-		if(context.getAttribute(Constants.ONLINE_USERS) == null)
-			context.setAttribute(Constants.ONLINE_USERS, new HashMap<Integer, String>());
-		//把（用户id-sessionID）存放到用户表中
-		HashMap<Integer, String> userMap = (HashMap<Integer, String>) context.getAttribute(Constants.ONLINE_USERS);
-		userMap.put(userId, session.getId());
+	@Override
+	public void sessionCreated(HttpSessionEvent event) {
+		// TODO Auto-generated method stub
+		System.out.println(getTime() + "  创建session " + event.getSession().getId());
+	}
+
+	@Override
+	public void sessionDestroyed(HttpSessionEvent event) {
+		// TODO Auto-generated method stub
+		System.out.println(getTime() + " 销毁session " + event.getSession().getId());
+	}
+	
+	
+	/**
+	 * 获取系统时间
+	 * @return
+	 */
+	private String getTime() {
+		long l = System.currentTimeMillis();
+		// new日期对象
+		Date date = new Date(l);
+		// 转换日期输出格式
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return dateFormat.format(date);
 	}
 	
 }

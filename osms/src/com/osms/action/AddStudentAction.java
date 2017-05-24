@@ -43,7 +43,10 @@ import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
 import com.osms.service.AMCService;
 import com.osms.service.UserService;
+import com.osms.utils.ControllerUtil;
 import com.osms.utils.Utils;
+
+import net.sf.json.JSONObject;
 
 
 @Component
@@ -138,9 +141,13 @@ public class AddStudentAction extends HttpServlet {
 		Map<String, String> parmas=new HashMap<String, String>();
 		List<byte[]> images=Utils.analysisForm(request, parmas);
 		//check
-		int status=checkParmas(parmas, request, response);
+		JSONObject data=new JSONObject();
+		response.setCharacterEncoding("UTF-8");
+		int status=checkParmas(parmas, request, response, data);
 		if(status!=0)
 		{
+			System.out.println(data);
+			ControllerUtil.out(response, data);
 			return;
 		}else
 		{
@@ -156,17 +163,19 @@ public class AddStudentAction extends HttpServlet {
 			//save a student
 			userService.saveStudent(user);
 			//request
-			request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
+			data.element("status", true);
+			ControllerUtil.out(response, data);
+//			request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
 			return;
 		}
 	}
 
 	
-	private int checkParmas(Map<String, String> parmas, HttpServletRequest request, HttpServletResponse response)
+	private int checkParmas(Map<String, String> parmas, HttpServletRequest request, HttpServletResponse response, JSONObject data)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String ERROR="";
 		int status=0;
+		String ERROR="";
 		for(Entry<String, String> entry:parmas.entrySet())
 		{
 			if(entry.getKey().equals("email"))
@@ -186,7 +195,7 @@ public class AddStudentAction extends HttpServlet {
 				status=userService.checkPhone(entry.getValue());
 				if(status==-1)
 			    {
-			      ERROR="该手机号已被注册"; 
+					ERROR="该手机号已被注册"; 
 			    }
 				if(status==1)
 				{
@@ -194,21 +203,20 @@ public class AddStudentAction extends HttpServlet {
 				}
 			}
 			//注释，不判断学号或者卡号，可能不存在
-			if(entry.getKey().equals("studentNumber")||entry.getKey().equals("scardNumber"))
-			{
-				System.out.println(entry.getValue()+"   "+entry.getValue().length());
-				status=userService.checkCard(entry.getValue());
-				if(status==1)
-				{
-					ERROR="卡号长度为11位";
-				}
-			}
+//			if(entry.getKey().equals("studentNumber")||entry.getKey().equals("scardNumber"))
+//			{
+//				System.out.println(entry.getValue()+"   "+entry.getValue().length());
+//				status=userService.checkCard(entry.getValue());
+//				if(status==1)
+//				{
+//					ERROR="卡号长度为11位";
+//				}
+//			}
 			if(status!=0)
 			{
 				System.out.println(ERROR);
-				request.getSession().setAttribute(Constants.ERROR, ERROR);
-				request.getRequestDispatcher("/WEB-INF/views/admin/addStudent.jsp").forward(request, response);
-				break;
+				data.element("status", false);
+				data.element("msg", ERROR);
 			}
 		}
 		return status;
@@ -261,18 +269,6 @@ public class AddStudentAction extends HttpServlet {
 			{
 				user.setPhone(entry.getValue());
 			}
-//			if(entry.getKey().equals("fundingTypeId1")&&entry.getValue()!=null&&!"".equals(entry.getValue()))
-//			{
-//				fundingOnUsers.add(new FundingOnUser(0, 0, Integer.parseInt(entry.getValue()), 1, null, null));
-//			}
-//			if(entry.getKey().equals("fundingTypeId2")&&entry.getValue()!=null&&!"".equals(entry.getValue()))
-//			{
-//				fundingOnUsers.add(new FundingOnUser(0, 0, Integer.parseInt(entry.getValue()), 1, null, null));
-//			}
-//			if(entry.getKey().equals("fundingTypeId3")&&entry.getValue()!=null&&!"".equals(entry.getValue()))
-//			{
-//				fundingOnUsers.add(new FundingOnUser(0, 0, Integer.parseInt(entry.getValue()), 1, null, null));
-//			}
 			if(entry.getKey().equals("studentType"))
 			{
 				schoolRoll.setStudentTypeId(Integer.parseInt(entry.getValue()));
@@ -328,13 +324,13 @@ public class AddStudentAction extends HttpServlet {
 			{
 				visa.setGuaranteeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("visaDueDate"))
-			{
-				if(entry.getValue().length()!=0)
-				{
-					visa.setVisaDueDate(Utils.stringToDate(entry.getValue()));
-				}
-			}
+//			if(entry.getKey().equals("visaDueDate"))
+//			{
+//				if(entry.getValue().length()!=0)
+//				{
+//					visa.setVisaDueDate(Utils.stringToDate(entry.getValue()));
+//				}
+//			}
 			if(entry.getKey().equals("academyId"))
 			{
 				if(entry.getValue().length()!=0)

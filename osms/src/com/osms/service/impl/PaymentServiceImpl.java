@@ -32,19 +32,36 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public List<Payment> getPaymentByUserId(int userId) {
 		// TODO Auto-generated method stub
-		List<Payment> payments=paymentDao.getPaymentByUserId(userId);
-		List<PaymentType> paymentTypes=paymentTypeDao.getAllPaymentType();
-		for(Payment p : payments)
+		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(userId);	
+		List<Payment> results=new ArrayList<Payment>();
+		Payment res=new Payment();
+		int id=0;
+		for(Payment p:payments)
 		{
-			for(PaymentType pt : paymentTypes)
+			if(id!=p.getUser().getUserId())
 			{
-				if(p.getPaymentTypeId()==pt.getPaymentTypeId())
+				if(id!=0)
 				{
-					p.setPaymentType(pt);
+					results.add(res);
+					res=null;
 				}
+				res=p;
+				id=p.getUser().getUserId();
+			}else
+			{
+				if(p.getMoney()==0)
+				{
+					res.setTotalMoney(res.getTotalMoney()+p.getTotalMoney());
+				}
+				res.setMoney(res.getMoney()+p.getMoney());
 			}
 		}
-		return payments;
+		if(payments.size()>0)
+		{
+			results.add(res);
+		}
+		
+		return results;
 	}
 
 	@Override
@@ -95,31 +112,33 @@ public class PaymentServiceImpl implements PaymentService {
 		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(parma, limit, page, count);
 		
 		List<Payment> results=new ArrayList<Payment>();
-		
+		Payment res=new Payment();
+		int id=0;
 		for(Payment p:payments)
 		{
-			boolean flag=true;
-			for(Payment payment:results)
+			if(id!=p.getUser().getUserId())
 			{
-				if(payment.getUser().getUserId()==p.getUser().getUserId()
-						&&payment.getPaymentType().getPaymentTypeId()==p.getPaymentType().getPaymentTypeId())
+				if(id!=0)
 				{
-					payment.setMoney(payment.getMoney()+p.getMoney());
-					flag=false;
-				}else if(payment.getUser().getUserId()==p.getUser().getUserId()
-						&&payment.getPaymentType().getPaymentTypeId()!=p.getPaymentType().getPaymentTypeId())
-				{
-					payment.setTotalMoney(payment.getTotalMoney()+p.getTotalMoney());
-					payment.setMoney(payment.getMoney()+p.getMoney());
-					payment.setDescrible(payment.getDescrible()+";"+p.getDescrible());
-					flag=false;
+					results.add(res);
+					res=null;
 				}
-			}
-			if(flag)
+				res=p;
+				id=p.getUser().getUserId();
+			}else
 			{
-				results.add(p);
+				if(p.getMoney()==0)
+				{
+					res.setTotalMoney(res.getTotalMoney()+p.getTotalMoney());
+				}
+				res.setMoney(res.getMoney()+p.getMoney());
 			}
 		}
+		if(payments.size()>0)
+		{
+			results.add(res);
+		}
+		
 		return results;
 	}
 
@@ -128,69 +147,90 @@ public class PaymentServiceImpl implements PaymentService {
 		// TODO Auto-generated method stub
 		List<Payment> payments = searchByPagesDao.getUsersByPaymentOnamc(userId);		
 		List<Payment> results=new ArrayList<Payment>();
-		for(Payment p:payments)
+		Payment res=new Payment();
+		int id=0;
+		for(Payment p : payments)
 		{
-			boolean flag=true;
-			for(Payment payment:results)
+			if(id!=p.getPaymentTypeId())
 			{
-				if(payment.getUser().getUserId()==p.getUser().getUserId()
-						&&payment.getPaymentType().getPaymentTypeId()==p.getPaymentType().getPaymentTypeId())
+				if(id!=0)
 				{
-					payment.setMoney(payment.getMoney()+p.getMoney());
-					flag=false;
-				}else if(payment.getUser().getUserId()==p.getUser().getUserId()
-						&&payment.getPaymentType().getPaymentTypeId()!=p.getPaymentType().getPaymentTypeId())
+					results.add(res);
+					res=null;
+				}
+				res=p;
+				id=p.getPaymentTypeId();
+			}else
+			{
+				res.setMoney(res.getMoney()+p.getMoney());
+				if(p.getDescrible()!=null&&!"".contentEquals(p.getDescrible()))
 				{
-					payment.setTotalMoney(payment.getTotalMoney()+p.getTotalMoney());
-					payment.setMoney(payment.getMoney()+p.getMoney());
-					payment.setDescrible(payment.getDescrible()+";"+p.getDescrible());
-					flag=false;
+					res.setDescrible(p.getDescrible());//最近一次缴费描述	
+				}
+				if(p.getInvalidTime()!=null&&!"".equals(p.getInvalidTime()))
+				{
+					res.setInvalidTime(p.getInvalidTime());
+				}
+				if(p.getPayDate()!=null&&!"".equals(p.getPayDate()))
+				{
+					res.setPayDate(p.getPayDate());//最近一次缴费日期
 				}
 			}
-			if(flag)
+		}
+		if(payments.size()>0)
+		{
+			results.add(res);
+		}
+		System.out.println(results);
+		return results;
+	}
+
+	@Override
+	public List<Payment> getPaymentForDifferTypeByUserId(int userId) {
+		// TODO Auto-generated method stub
+		List<Payment> payments=paymentDao.getPaymentByUserId(userId);
+		List<PaymentType> paymentTypes=paymentTypeDao.getAllPaymentType();
+		List<Payment> results=new ArrayList<>();
+		Payment res=new Payment();
+		int id=0;
+		for(Payment p : payments)
+		{
+			if(id!=p.getPaymentTypeId())
 			{
-				results.add(p);
+				if(id!=0)
+				{
+					results.add(res);
+					res=null;
+				}
+				res=p;
+				id=p.getPaymentTypeId();
+			}else
+			{
+				res.setMoney(res.getMoney()+p.getMoney());
+				if(p.getDescrible()!=null&&!"".contentEquals(p.getDescrible()))
+				{
+					res.setDescrible(p.getDescrible());//最近一次缴费描述	
+				}
+				if(p.getPayDate()!=null&&!"".equals(p.getPayDate()))
+				{
+					res.setPayDate(p.getPayDate());//最近一次缴费日期
+				}
 			}
 		}
-		
-		
-		
-//		List<Payment> results=new ArrayList<Payment>();
-//		for(Payment p:payments)
-//		{
-//			//get a userId
-//			int user=p.getUser().getUserId();
-//			double totalMoney=0;
-//			double totalPaid=0;
-//			List<Integer> payTypeIds=new ArrayList<Integer>();
-//			payTypeIds.add(0);
-//			for(Payment payment:payments)
-//			{
-//				if(user==payment.getUser().getUserId())
-//				{
-//					//the same user
-//					boolean flag=true;
-//					for(int payTypeId:payTypeIds)
-//					{
-//						//check paymentTypeId
-//						if(payTypeId==payment.getPaymentType().getPaymentTypeId())
-//						{
-//							flag=false;
-//						}
-//					}
-//					//different paymentTypeId
-//					if(flag)
-//					{
-//						totalMoney+=payment.getTotalMoney();
-//						payTypeIds.add(payment.getPaymentType().getPaymentTypeId());
-//					}
-//					totalPaid+=payment.getMoney();
-//				}
-//			}
-//			p.setTotalMoney(totalMoney);
-//			p.setMoney(totalPaid);
-//			results.add(p);
-//		}
+		if(payments.size()>0)
+		{
+			results.add(res);
+		}
+		for(Payment p : results)
+		{
+			for(PaymentType pt : paymentTypes)
+			{
+				if(p.getPaymentTypeId()==pt.getPaymentTypeId())
+				{
+					p.setPaymentType(pt);
+				}
+			}
+		}
 		return results;
 	}
 

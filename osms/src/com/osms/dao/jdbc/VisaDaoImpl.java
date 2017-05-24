@@ -20,13 +20,13 @@ public class VisaDaoImpl extends JDBCBase implements VisaDao {
 	@Override
 	public int save(Visa visa, Connection conn) {
 		// TODO Auto-generated method stub
-		String sql="INSERT INTO Visa VALUES(?,?,?,?,?,?)";
+		String sql="INSERT INTO Visa VALUES(?,?,?,?,?)";
 		Object[] parma={
 			visa.getRegisterDeadLine(),
 			visa.getIntermediaryName(),
 			visa.getIntermediaryPhone(),
 			visa.getGuaranteeId(),
-			visa.getVisaDueDate(),
+//			visa.getVisaDueDate(),
 			visa.getStatus()
 		};
 		int visaId=save(sql, parma, conn);
@@ -85,11 +85,11 @@ public class VisaDaoImpl extends JDBCBase implements VisaDao {
 			sql.append(", intermediaryPhone=?");
 			parmas.add(visa.getIntermediaryPhone());
 		}
-		if(visa.getVisaDueDate()!=null)
-		{
-			sql.append(", visaDueDate=?");
-			parmas.add(visa.getVisaDueDate());
-		}
+//		if(visa.getVisaDueDate()!=null)
+//		{
+//			sql.append(", visaDueDate=?");
+//			parmas.add(visa.getVisaDueDate());
+//		}
 		if(visa.getStatus()!=0)
 		{
 			sql.append(", visaStatus=?");

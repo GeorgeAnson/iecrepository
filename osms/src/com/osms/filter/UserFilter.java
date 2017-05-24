@@ -52,30 +52,6 @@ public class UserFilter implements Filter {
 		HttpServletResponse res = (HttpServletResponse) response;
 		System.out.println(req.getRequestURI()+"; the request uri");
 
-//		// /osms/index.htm
-//		if(req.getRequestURI().equals(req.getContextPath()+"/login.jsp"))
-//		{
-//			chain.doFilter(req, res);
-//			return;
-//		}
-
-//		//if it's the login.jsp, pass anyway
-//		if(req.getRequestURI().equals(req.getContextPath()+error_url))
-//		{
-//			chain.doFilter(req, res);
-//			return;
-//		}
-//
-//		//if it's index.htm; check user
-//		if(req.getRequestURI().equals(req.getContextPath()+"/index.htm"))
-//		{
-//			if(checkUser(req) && isAvailable(req))
-//			{
-//				chain.doFilter(req, res);
-//				return;
-//			}
-//		}
-
 		//check whether the url is belong to passed urls
 		if (isCheckAble(req)) {
 			chain.doFilter(req, res);

@@ -52,7 +52,7 @@ public class Constants {
 	/**
 	 * 保存在ServletContext中的用户列表
 	 */
-	public static String ONLINE_USERS = "com.osms.listener.OnLineListener.Map";
+	public static String ONLINE_USERS = "map";
 	/**
 	 * 用户类别配置
 	 */

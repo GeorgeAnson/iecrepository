@@ -206,6 +206,7 @@ public class UserInfoAction extends HttpServlet {
 		}else
 		{
 			int userId=Integer.parseInt(id);
+			System.out.println("查询的用户ID"+userId);
 			Users user=userService.getUser(userId, Constants.STUDENT);
 			System.out.println(user);
 			request.getSession().setAttribute("student", user);
@@ -292,13 +293,13 @@ public class UserInfoAction extends HttpServlet {
 			{
 				user.getVisaOnUser().getVisa().setGuaranteeId(Integer.parseInt(entry.getValue()));
 			}
-			if(entry.getKey().equals("visaDueDate")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getVisaDueDate()))
-			{
-				if(entry.getValue().length()!=0)
-				{
-					user.getVisaOnUser().getVisa().setVisaDueDate(Utils.stringToDate(entry.getValue()));
-				}
-			}
+//			if(entry.getKey().equals("visaDueDate")&&entry.getValue()!=null&&!entry.getValue().equals(user.getVisaOnUser().getVisa().getVisaDueDate()))
+//			{
+//				if(entry.getValue().length()!=0)
+//				{
+//					user.getVisaOnUser().getVisa().setVisaDueDate(Utils.stringToDate(entry.getValue()));
+//				}
+//			}
 			if(entry.getKey().equals("academyId")&&entry.getValue()!=null&&Integer.parseInt(entry.getValue())!=0&&!entry.getValue().equals(user.getAmcOnUsers().get(0).getAcademyId()))
 			{
 				if(entry.getValue().length()!=0)

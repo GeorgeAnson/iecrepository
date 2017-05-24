@@ -70,8 +70,8 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 		Object[] parma={
 			payment.getUserId(),
 			payment.getPaymentTypeId(),
-			payment.getSchoolYear(),
-			payment.getTheSemester(),
+			payment.getValidTime(),
+			payment.getInvalidTime(),
 			payment.getTotalMoney(),
 			payment.getMoney(),
 			payment.getPaymentOprUser(),
@@ -99,16 +99,16 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 			sql.append(", paymentType=?");
 			parma.add(payment.getPaymentTypeId());
 		}
-		if(payment.getSchoolYear()!=null)
+		if(payment.getValidTime()!=null)
 		{
-			sql.append(", schoolYear=?");
-			parma.add(payment.getSchoolYear());
+			sql.append(", validTime=?");
+			parma.add(payment.getValidTime());
 		}
 		
-		if(payment.getTheSemester()!=0)
+		if(payment.getInvalidTime()!=null)
 		{
-			sql.append(", theSemester=?");
-			parma.add(payment.getTheSemester());
+			sql.append(", invalidTime=?");
+			parma.add(payment.getInvalidTime());
 		}
 		if(payment.getTotalMoney()>=0)
 		{
@@ -148,7 +148,7 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 		PreparedStatement ps=null;
 		ResultSet rs=null;
 		List<Payment> payments=new ArrayList<Payment>();
-		String sql="SELECT * FROM Payment WHERE paymentStatus=1 AND paymentUser="+userId;
+		String sql="SELECT * FROM Payment WHERE paymentStatus=1 AND paymentUser="+userId+"  order by paymentType";
 		try {
 			ps=conn.prepareStatement(sql);
 			rs=query(ps);
@@ -184,15 +184,15 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 			sql.append(" AND paymentTypeId=?");
 			parmas.add(payment.getPaymentTypeId());
 		}
-		if(payment.getSchoolYear()!=null)
+		if(payment.getValidTime()!=null)
 		{
-			sql.append(" AND schoolYear=?");
-			parmas.add(payment.getSchoolYear());
+			sql.append(" AND validTime=?");
+			parmas.add(payment.getValidTime());
 		}
-		if(payment.getTheSemester()!=0)
+		if(payment.getInvalidTime()!=null)
 		{
-			sql.append(" AND theSemester=?");
-			parmas.add(payment.getTheSemester());
+			sql.append(" AND invalidTime=?");
+			parmas.add(payment.getInvalidTime());
 		}
 		if(payment.getTotalMoney()!=0)
 		{
@@ -238,8 +238,8 @@ public class PaymentDaoImpl extends JDBCBase implements PaymentDao {
 		Object[] parma={
 			p.getUserId(),
 			p.getPaymentTypeId(),
-			p.getSchoolYear(),
-			p.getTheSemester(),
+			p.getValidTime(),
+			p.getInvalidTime(),
 			p.getTotalMoney(),
 			p.getMoney(),
 			p.getPaymentOprUser(),

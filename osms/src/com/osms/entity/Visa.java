@@ -21,7 +21,7 @@ public class Visa implements Serializable{
 	private String intermediaryName=null;//intermediary name
 	private String intermediaryPhone=null;//intermediary phone number
 //	private Date approvalDate=null;//approval date
-	private Date visaDueDate=null;//visa due date
+//	private Date visaDueDate=null;//visa due date
 	private int status=0;//current information status
 	
 	
@@ -33,13 +33,13 @@ public class Visa implements Serializable{
 	}
 
 	public Visa(int visaId, int guaranteeId, Date registerDeadLine, String intermediaryName, String intermediaryPhone,
-			Date visaDueDate, int status, Guarantee guarantee) {
+			int status, Guarantee guarantee) {
+		super();
 		this.visaId = visaId;
 		this.guaranteeId = guaranteeId;
 		this.registerDeadLine = registerDeadLine;
 		this.intermediaryName = intermediaryName;
 		this.intermediaryPhone = intermediaryPhone;
-		this.visaDueDate = visaDueDate;
 		this.status = status;
 		this.guarantee = guarantee;
 	}
@@ -84,14 +84,6 @@ public class Visa implements Serializable{
 		this.intermediaryPhone = intermediaryPhone;
 	}
 
-	public Date getVisaDueDate() {
-		return visaDueDate;
-	}
-
-	public void setVisaDueDate(Date visaDueDate) {
-		this.visaDueDate = visaDueDate;
-	}
-
 	public int getStatus() {
 		return status;
 	}
@@ -111,10 +103,8 @@ public class Visa implements Serializable{
 	@Override
 	public String toString() {
 		return "Visa [visaId=" + visaId + ", guaranteeId=" + guaranteeId + ", registerDeadLine=" + registerDeadLine
-				+ ", intermediaryName=" + intermediaryName + ", intermediaryPhone=" + intermediaryPhone
-				+ ", visaDueDate=" + visaDueDate + ", status=" + status + ", guarantee=" + guarantee + "]";
+				+ ", intermediaryName=" + intermediaryName + ", intermediaryPhone=" + intermediaryPhone + ", status="
+				+ status + ", guarantee=" + guarantee + "]";
 	}
-
-
 
 }

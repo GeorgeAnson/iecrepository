@@ -1,6 +1,5 @@
 eclipse.preferences.version=1
 encoding//src/com/osms/globle/Constants.java=UTF-8
 encoding//src/com/osms/listener/OnLineListener.java=UTF-8
-encoding//src/com/osms/listener/SessionListener.java=UTF-8
 encoding//src/com/osms/proxy/DelegatingServletProxy.java=UTF-8
 encoding//src/com/osms/utils/JSONUtil.java=UTF-8

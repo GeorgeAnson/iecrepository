@@ -22,7 +22,7 @@
 							<i class="icon-exclamation-sign"></i>&emsp;Warning.
 						</h4>
 						
-						&emsp;&emsp; Your visa will expire soon. <b><span id="timeLine"></span></b> days. (<span id="timelinedate">${visaOnUser.visa.visaDueDate}</span>)
+						&emsp;&emsp; Your visa will expire soon. <b><span id="timeLine"></span></b> days. (<span id="timelinedate">${invalidTime}</span>)
 					</div>
 				</div>
 			</div>

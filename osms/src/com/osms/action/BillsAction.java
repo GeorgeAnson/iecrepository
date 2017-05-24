@@ -110,25 +110,16 @@ public class BillsAction extends HttpServlet {
 	private void getDetail(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
 		int userId=Integer.parseInt(request.getParameter("id").trim());
-		String schoolYear=request.getParameter("schoolYear").trim();
-		int semester=Integer.parseInt(request.getParameter("semester").trim());
-		System.out.println(schoolYear+" school,semester "+semester);
-		List<Payment> payments=paymentService.getPaymentByUserId(userId);
-		int i=0;
+		List<Payment> payments=paymentService.getPaymentForDifferTypeByUserId(userId);
+		
 		if(null!=payments&&payments.size()>0)
 		{
 			Iterator it=payments.iterator();
 			while(it.hasNext())
 			{
 				Payment payment=(Payment) it.next();
-				if(!payment.getSchoolYear().equals(schoolYear)|| (payment.getTheSemester()!=semester))
-				{
-					it.remove();
-				}else
-				{
-					payment.setUser(userDao.getUserByUserId(payment.getUserId()));
-					payment.setOprUser(userDao.getUserByUserId(payment.getPaymentOprUser()));
-				}
+				payment.setUser(userDao.getUserByUserId(payment.getUserId()));
+				payment.setOprUser(userDao.getUserByUserId(payment.getPaymentOprUser()));
 			}
 		}
 		for(Payment p:payments)
@@ -142,14 +133,20 @@ public class BillsAction extends HttpServlet {
 	private void initAdd(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
 		int userId=request.getParameter("id").trim()==null?0:Integer.parseInt(request.getParameter("id").trim());
-		List<Payment> payments=paymentService.getPaymentByUserId(userId);
-		List<PaymentType> paymentTypes=new ArrayList<>();
-		paymentTypes=paymentTypeDao.getAllPaymentType();
+		List<Payment> payments=paymentService.getPaymentForDifferTypeByUserId(userId);
+		//List<PaymentType> paymentTypes=new ArrayList<>();
+		//paymentTypes=paymentTypeDao.getAllPaymentType();
 		for(Payment payment:payments)
 		{
 			payment.setPayDate(null);
 			payment.setPaymentOprUser(-1);;
-			payment.setPaymentTypes(paymentTypes);
+			payment.setInvalidTime(null);
+			payment.setId(-1);
+			payment.setStatus(-1);
+			payment.setValidTime(null);
+			payment.setPaymentTypeId(-1);
+			payment.getPaymentType().setStatus(-1);
+			//payment.setPaymentTypes(paymentTypes);
 		}
 		response.setCharacterEncoding("UTF-8");
 		ControllerUtil.out(response, payments);
@@ -178,9 +175,6 @@ public class BillsAction extends HttpServlet {
 		int limit=Integer.parseInt(Constants.LIMIT_PER_PAGE_DATA);
 		//get page and pages
 		getSearchPage(request, limit, count, searchForm);
-		//get schoolYear and semester
-		parma.put("schoolYear", "'"+searchForm.getSchoolYear()+"'");
-		parma.put("theSemester", searchForm.getThsSemester());
 		//get user by amcOnUser
 		List<Payment> payments=paymentService.searchByPaymentOnamc(parma, limit, searchForm.getPage(), count);
 		
@@ -248,16 +242,7 @@ public class BillsAction extends HttpServlet {
 			String academyId=request.getParameter("academyId").trim();
 			String majorId=request.getParameter("majorId").trim();
 			String cclassId=request.getParameter("cclassId").trim();
-			String schoolYear=request.getParameter("schoolYear").trim();
-			String theSemester=request.getParameter("theSemester").trim();
 			
-			if(schoolYear==null||"".equals(schoolYear)
-					||theSemester==null||"".equals(theSemester))
-			{
-				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-				return;
-			}
 			parma.put("userType", Constants.STUDENT);
 			if(academyId!=null&&!"".equals(academyId)&&!"0".equals(academyId))
 			{
@@ -274,26 +259,8 @@ public class BillsAction extends HttpServlet {
 				parma.put("cclass", Integer.parseInt(cclassId));
 				searchForm.setCclassId(Integer.parseInt(cclassId));
 			}
-			if(schoolYear!=null&&!"".equals(schoolYear))
-			{
-				searchForm.setSchoolYear(schoolYear);
-			}
-			if(theSemester!=null&&!"".equals(theSemester))
-			{
-				searchForm.setThsSemester(Integer.parseInt(theSemester));
-			}
 		}else
 		{
-			String schoolYear=request.getParameter("schoolYear").trim();
-			String theSemester=request.getParameter("theSemester").trim();
-			
-			if(schoolYear==null||"".equals(schoolYear)
-					||theSemester==null||"".equals(theSemester))
-			{
-				request.getSession().setAttribute(Constants.ERROR, "请选择学年和学期");
-				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-				return;
-			}
 			parma.put("userType", Constants.STUDENT);
 			
 			AMCOnUser amcOnUser=amcOnUserDao.getAMCOnUserByUserId(user.getUserId()).get(0);
@@ -303,14 +270,6 @@ public class BillsAction extends HttpServlet {
 			searchForm.setMajorId(amcOnUser.getMajorId());
 			parma.put("cclass", amcOnUser.getClassId());
 			searchForm.setCclassId(amcOnUser.getClassId());
-			if(schoolYear!=null&&!"".equals(schoolYear))
-			{
-				searchForm.setSchoolYear(schoolYear);
-			}
-			if(theSemester!=null&&!"".equals(theSemester))
-			{
-				searchForm.setThsSemester(Integer.parseInt(theSemester));
-			}
 		}
 	}
 
@@ -328,8 +287,8 @@ public class BillsAction extends HttpServlet {
 		
 		if(op.toLowerCase().equals("addbills".toLowerCase()))
 		{
-			String schoolYear=request.getParameter("schoolYear").trim();
-			String theSemester=request.getParameter("theSemester").trim();
+			String validTime=request.getParameter("validTime").trim();//schoolYear
+			String invalidTime=request.getParameter("invalidTime").trim();//theSemester
 			String describle=request.getParameter("describe").trim();
 			
 			String academyId=request.getParameter("academyId").trim();
@@ -340,7 +299,7 @@ public class BillsAction extends HttpServlet {
 			String paymentTypeIds=request.getParameter("paymentTypeIds").trim();
 			System.out.println(paymentTypeIds);
 			//check
-			int status=check(request, response, academyId, majorId, cclassId, paymentTypeIds, theSemester);
+			int status=check(request, response, academyId, majorId, cclassId, paymentTypeIds, invalidTime);
 			if(status!=0)
 			{
 				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
@@ -351,7 +310,7 @@ public class BillsAction extends HttpServlet {
 				List<Integer> userIds=amcOnUserDao.getuserIdsByamc(Integer.parseInt(academyId), Integer.parseInt(majorId), Integer.parseInt(cclassId));
 				System.out.println(userIds+" ,payids "+paymentTypeIds);
 				//get results
-				List<Payment> payments=matchParmas(userIds, paymentTypeIds, majorId, schoolYear, theSemester, describle, oprUserId);
+				List<Payment> payments=matchParmas(userIds, paymentTypeIds, majorId, validTime, invalidTime, describle, oprUserId);
 				System.out.println(payments);
 				//save
 				paymentService.save(payments);
@@ -389,7 +348,7 @@ public class BillsAction extends HttpServlet {
 	 * @return
 	 */
 	private List<Payment> matchParmas(List<Integer> userIds, String paymentTypeIds, String majorId,
-			String schoolYear, String theSemester, String describle, int oprUserId) {
+			String validTime, String invalidTime, String describle, int oprUserId) {
 		// TODO Auto-generated method stub
 		List<Payment> payments=new ArrayList<Payment>();
 		String[] str=paymentTypeIds.split(";");
@@ -401,10 +360,11 @@ public class BillsAction extends HttpServlet {
 				Payment p=new Payment();
 				p.setUserId(userId);
 				p.setPaymentTypeId(Integer.parseInt(matchs[0]));
-				p.setSchoolYear(schoolYear);
-				p.setTheSemester(Integer.parseInt(theSemester));
+				p.setValidTime(Utils.stringToDate(validTime));
+				p.setInvalidTime(Utils.stringToDate(invalidTime));
 				p.setTotalMoney(Double.parseDouble(matchs[1]));
-				p.setMoney(Double.parseDouble(matchs[2]));
+//				p.setMoney(Double.parseDouble(matchs[2]));
+				p.setMoney(0);//初始化生成账单，无需缴费费
 				p.setPayDate(Utils.stringToDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
 				p.setDescrible(describle);
 				p.setStatus(1);
@@ -423,15 +383,14 @@ public class BillsAction extends HttpServlet {
 	 * @param majorId
 	 * @param cclassId
 	 * @param paymentTypeIds
-	 * @param theSemester 
+	 * @param invalidTime 
 	 * @param totalNeeds
-	 * @param schoolYear
 	 * @param op 
 	 * @throws IOException 
 	 * @throws ServletException 
 	 */
 	private int check(HttpServletRequest request, HttpServletResponse response, 
-			String academyId, String majorId, String cclassId, String paymentTypeIds, String theSemester) throws ServletException, IOException {
+			String academyId, String majorId, String cclassId, String paymentTypeIds, String invalidTime) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		int status=0;
 		if(academyId==null||"".equals(academyId)||"0".equals(academyId)
@@ -451,7 +410,7 @@ public class BillsAction extends HttpServlet {
 				request.getSession().setAttribute(Constants.ERROR, "请选择缴费项目");
 				status=1;
 			}
-			if(matchs[1]==null||matchs[2]==null)
+			if(matchs[1]==null)
 			{
 				request.getSession().setAttribute(Constants.ERROR, "金额不能留空");
 				status=1;
@@ -461,19 +420,6 @@ public class BillsAction extends HttpServlet {
 				if(needs<0)
 				{
 					request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-					status=1;
-				}
-				
-				double pay=Double.parseDouble(matchs[2]);
-				if(pay<0)
-				{
-					request.getSession().setAttribute(Constants.ERROR, "缴费金额不能为负");
-					status=1;
-				}
-				
-				if(needs<pay)
-				{
-					request.getSession().setAttribute(Constants.ERROR, "应缴金额小于实缴金额");
 					status=1;
 				}
 			}
@@ -492,30 +438,59 @@ public class BillsAction extends HttpServlet {
 	private void initBillsPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		
-		String op=request.getParameter("op").trim();
-		Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
-		Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
-		Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
-		amcService.matchAllAMC(academyMap, majorMap, classMap);
-		request.getSession().setAttribute("academyMap", academyMap);
-		request.getSession().setAttribute("majorMap", majorMap);
-		request.getSession().setAttribute("classMap", classMap);
-
-		List<PaymentType> paymentTypes=paymentTypeDao.getAllPaymentType();
-		request.getSession().setAttribute("paymentTypes", paymentTypes);
-		
-		if(op.toLowerCase().equals(Constants.ADD.toLowerCase()))
+		if(user.getUserTypeId()==4)
 		{
-			request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
-			return;
-		}else if(op.toLowerCase().equals("manage".toLowerCase()))
-		{
+			List<Payment> payments=paymentService.getPaymentForDifferTypeByUserId(user.getUserId());
+			
+			if(null!=payments&&payments.size()>0)
+			{
+				Iterator it=payments.iterator();
+				while(it.hasNext())
+				{
+					Payment payment=(Payment) it.next();
+					payment.setUser(userDao.getUserByUserId(payment.getUserId()));
+				}
+			}
+			for(Payment p:payments)
+			{
+				//p.getUser().setUserId(0);//保持和管理员查询的条件相同，patment.user.userId,否则学生登陆无法查询
+				p.getUser().setEmail(null);
+				p.getUser().setPassword(null);
+				p.getUser().setRegisterDate(null);
+				p.getUser().setUserTypeId(0);
+				p.getUser().setStatus(0);
+				p.getUser().setUserTypeId(0);
+				System.out.println("detail : "+p);
+			}
+			request.getSession().setAttribute("payments", payments);
 			request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
-			return;
 		}else
 		{
-			request.getRequestDispatcher(request.getContextPath()+"/login.jsp").forward(request, response);
-			return;
+			String op=request.getParameter("op").trim();
+			Map<Integer, Academy> academyMap=new HashMap<Integer, Academy>();
+			Map<Integer, AcademyMajorBean> majorMap=new HashMap<Integer, AcademyMajorBean>();
+			Map<Integer, AMCOnUser> classMap=new HashMap<Integer, AMCOnUser>();
+			amcService.matchAllAMC(academyMap, majorMap, classMap);
+			request.getSession().setAttribute("academyMap", academyMap);
+			request.getSession().setAttribute("majorMap", majorMap);
+			request.getSession().setAttribute("classMap", classMap);
+
+			List<PaymentType> paymentTypes=paymentTypeDao.getAllPaymentType();
+			request.getSession().setAttribute("paymentTypes", paymentTypes);
+			
+			if(op.toLowerCase().equals(Constants.ADD.toLowerCase()))
+			{
+				request.getRequestDispatcher("/WEB-INF/views/admin/addBills.jsp").forward(request, response);
+				return;
+			}else if(op.toLowerCase().equals("manage".toLowerCase()))
+			{
+				request.getRequestDispatcher("/WEB-INF/views/bills.jsp").forward(request, response);
+				return;
+			}else
+			{
+				request.getRequestDispatcher(request.getContextPath()+"/login.jsp").forward(request, response);
+				return;
+			}
 		}
 	}
 

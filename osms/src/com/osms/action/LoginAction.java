@@ -1,6 +1,7 @@
 package com.osms.action;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,11 +16,11 @@ import com.osms.dao.IntroduceDao;
 import com.osms.dao.UserDao;
 import com.osms.dao.UserTypeDao;
 import com.osms.entity.Introduce;
+import com.osms.entity.Payment;
 import com.osms.entity.UserType;
 import com.osms.entity.Users;
-import com.osms.entity.VisaOnUser;
 import com.osms.globle.Constants;
-import com.osms.service.VisaOnUserService;
+import com.osms.service.PaymentService;
 import com.osms.bean.LoginBean;
 import com.osms.utils.Utils;
 
@@ -42,7 +43,7 @@ public class LoginAction extends HttpServlet{
 	IntroduceDao introduceDao;
 	
 	@Autowired
-	VisaOnUserService visaOnUserService;
+	PaymentService paymentService;
 	
 	String OK_URL=null;
 	String ERROR_URL=null;
@@ -114,8 +115,16 @@ public class LoginAction extends HttpServlet{
 		
 		if(user.getUserTypeId()==Integer.parseInt(Constants.STUDENT))
 		{
-			VisaOnUser visaOnUser=visaOnUserService.getVisaOnUserByUserId(user.getUserId());
-			session.setAttribute("visaOnUser",visaOnUser);
+			List<Payment> payments=paymentService.searchByPaymentOnUserId(user.getUserId());
+			for(Payment p:payments)
+			{
+				System.out.println(p.getInvalidTime());
+			}
+			if(payments.size()>0&&payments.get(0)!=null)
+			{
+				System.out.println(payments.get(0).getInvalidTime());
+				session.setAttribute("invalidTime", payments.get(0).getInvalidTime());
+			}
 		}		
 		session.setAttribute(Constants.USER, user);
 	}
